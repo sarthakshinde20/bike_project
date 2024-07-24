@@ -1,64 +1,40 @@
 import 'package:app_settings/app_settings.dart';
-import 'package:bike_project/screens/response.dart';
 import 'package:bike_project/screens/bike_detail.dart';
-import 'package:bike_project/screens/locate_bike.dart';
 import 'package:bike_project/screens/location.dart';
 import 'package:bike_project/screens/notification.dart';
 import 'package:bike_project/screens/profile.dart';
-import 'dart:convert';
+import 'package:bike_project/screens/services.dart';
 import 'package:bike_project/screens/support.dart';
 import 'package:bike_project/screens/tire_health.dart';
 import 'package:flutter/material.dart';
-
-import 'package:flutter/services.dart';
+import 'dart:math';
 
 class MyHome extends StatelessWidget {
-  const MyHome({Key? key}) : super(key: key);
-  static const platform = MethodChannel('com.example.bike_project/bluetooth');
-
-  Future<void> _enableBluetooth() async {
-    try {
-      await platform.invokeMethod('enableBluetooth');
-    } on PlatformException catch (e) {
-      print("Failed to enable Bluetooth: '${e.message}'.");
+  String getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour >= 1 && hour < 12) {
+      return 'Good Morning!';
+    } else if (hour >= 12 && hour < 16) {
+      return 'Good Afternoon!';
+    } else if (hour >= 16 && hour < 23) {
+      return 'Good Evening!';
+    } else {
+      return 'Good Day!';
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final responseBody = ModalRoute.of(context)?.settings.arguments;
-
-    Map<String, dynamic> responseJson = {};
-    if (responseBody is String) {
-      // If the responseBody is a String, try to decode it
-      try {
-        responseJson = jsonDecode(responseBody);
-      } catch (e) {
-        print('Error decoding JSON: $e');
-        responseJson = {
-          'error': 'Invalid response format',
-          'responseBody': responseBody,
-        };
-      }
-    } else if (responseBody is Map<String, dynamic>) {
-      // If the responseBody is already a Map
-      responseJson = responseBody;
-    } else {
-      // If the responseBody is neither String nor Map
-      responseJson = {
-        'error': 'Invalid response type',
-        'responseBody': responseBody.toString(),
-      };
-    }
-
-    final sessionId = responseJson['session_id'] ?? '';
-    final vehicleId =
-        responseJson['vehicles'] != null && responseJson['vehicles'].isNotEmpty
-            ? responseJson['vehicles'][0]['vehicle_id'] ?? ''
-            : '';
-
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+    // Get the arguments from the route
+    final Map<String, dynamic> args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final String sessionId = args['sessionId'] as String? ?? 'No session ID';
+    final String vehicleId = args['vehicleId'] as String? ?? 'No vehicle ID';
+    final Map<String, dynamic>? dashboardData =
+        args['dashboardData'] as Map<String, dynamic>?;
+
     return Scaffold(
       drawer: Drawer(
         child: ListView(
@@ -83,10 +59,23 @@ class MyHome extends StatelessWidget {
                     bottom: screenHeight * 0.025, // 2.5% of screen height
                     right: screenWidth * 0.25, // 35% of screen width
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
+                      Padding(
+                        padding: EdgeInsets.only(
+                          right: screenWidth * 0.0, // 0% of screen width
+                        ), // Adjust the padding as needed
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back_ios,
+                            color: Color.fromARGB(255, 255, 255, 255),
+                            size: 24,
+                          ),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ),
+                      const Text(
                         'Menu',
                         style: TextStyle(
                           fontSize: 28,
@@ -95,7 +84,7 @@ class MyHome extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           shadows: [
                             Shadow(
-                              offset: Offset(2.0, 3.0),
+                              offset: Offset(3.0, 4.0),
                               blurRadius: 3.0,
                               color: Color.fromARGB(119, 0, 0, 0),
                             ),
@@ -118,15 +107,204 @@ class MyHome extends StatelessWidget {
           ],
         ),
       ),
-      body: const SafeArea(child: HomePageContent()),
-      floatingActionButton: Builder(
-        builder: (BuildContext context) {
-          return Column(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          double size = constraints.maxWidth * 0.5;
+
+          return Stack(
             children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  width: 100,
+                  height: MediaQuery.of(context).size.height,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        Color.fromRGBO(9, 84, 94, 0.517708),
+                        Color(0xFF0C7785),
+                        Color(0xFF09545E),
+                      ],
+                      transform: GradientRotation(90.3 * (pi / 90)),
+                      stops: [0.0, 0.7103, 1.1206],
+                    ),
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Transform.rotate(
+                  angle: 45 * (pi / 180),
+                  child: Container(
+                    width: size * 0.86,
+                    height: size * 0.86,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        transform: GradientRotation(86.62 * (pi / 90)),
+                        stops: [0.2505, 0.7943, 1.2565, 1.658],
+                        colors: [
+                          Color(0xFF09545E),
+                          Color(0xFF0C7785),
+                          Color.fromRGBO(9, 84, 94, 0.517708),
+                          Colors.transparent,
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(size * 0.26),
+                    ),
+                    child: Center(
+                      child: Transform.rotate(
+                        angle: -90 * (pi / 180),
+                        child: Container(
+                          width: size * 0.715,
+                          height: size * 0.715,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(size * 0.15),
+                          ),
+                          child: Center(
+                            child: Transform.rotate(
+                              angle: 90 * (pi / 90),
+                              child: Container(
+                                width: size * 0.56,
+                                height: size * 0.56,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                    transform:
+                                        GradientRotation(90.3 * (pi / 90)),
+                                    stops: [0.1376, 0.5174, 0.8403, 1.1206],
+                                    colors: [
+                                      Color(0xFF09545E),
+                                      Color(0xFF0C7785),
+                                      Color.fromRGBO(9, 84, 94, 0.517708),
+                                      Colors.transparent,
+                                    ],
+                                  ),
+                                  borderRadius:
+                                      BorderRadius.circular(size * 0.125),
+                                ),
+                                child: Center(
+                                  child: Transform.rotate(
+                                    angle: 135 *
+                                        (pi /
+                                            108), // Corrected the angle calculation
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              dashboardData != null &&
+                                                      dashboardData!['data'] !=
+                                                          null
+                                                  ? '${dashboardData!['data'][0]['battery_percentage']}'
+                                                  : 'N/A',
+                                              style: const TextStyle(
+                                                fontSize: 30,
+                                                fontWeight: FontWeight.w400,
+                                                fontFamily: 'Ethnocentric',
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            const Text(
+                                              '%',
+                                              style: TextStyle(
+                                                fontFamily: 'Ethnocentric',
+                                                fontWeight: FontWeight.w400,
+                                                fontSize: 14,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const Text(
+                                          'Battery',
+                                          style: TextStyle(
+                                              fontFamily: 'Raleway',
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 13,
+                                              color: Colors.white),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: MediaQuery.of(context).size.height *
+                    0.7, // Adjust as needed
+                left: 0,
+                right: -20,
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Transform.rotate(
+                    angle: -90 * (pi / 180),
+                    child: const Text(
+                      'Origin',
+                      style: TextStyle(
+                        fontFamily: 'ethnocentric',
+                        fontSize: 54,
+                        letterSpacing: 0,
+                        color: Color(0x532D2A2A),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(
+                    MediaQuery.of(context).size.width > 600
+                        ? 185
+                        : 185, 
+                    0,
+                    0,
+                    0,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.asset(
+                      'assets/images/image_bike.png',
+                      width: 420,
+                      height: MediaQuery.of(context).size.height,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 70,
+                left: 35,
+                right: 0,
+                child: Align(
+                  child: ClipRRect(
+                    child: Image.asset(
+                      'assets/images/briskhome.png',
+                      width: 160,
+                      height: 18,
+                    ),
+                  ),
+                ),
+              ),
               Padding(
                 padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.height * 0.11,
-                  left: MediaQuery.of(context).size.width * 0,
+                  top: MediaQuery.of(context).size.height * 0.16,
+                  left: MediaQuery.of(context).size.width * 0.08,
                 ),
                 child: GestureDetector(
                   onTap: () {
@@ -142,16 +320,16 @@ class MyHome extends StatelessWidget {
               ),
               Padding(
                 padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.height * 0.02,
-                  left: MediaQuery.of(context).size.width * 0.01,
+                  top: MediaQuery.of(context).size.height * 0.24,
+                  left: MediaQuery.of(context).size.width * 0.08,
                 ),
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const NotificationPage()),
-                    );
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //       builder: (context) => const NotificationPage()),
+                    // );
                   },
                   child: Image.asset(
                     'assets/images/notification.png',
@@ -163,8 +341,8 @@ class MyHome extends StatelessWidget {
               ),
               Padding(
                 padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.height * 0.02,
-                  left: MediaQuery.of(context).size.width * 0.015,
+                  top: MediaQuery.of(context).size.height * 0.32,
+                  left: MediaQuery.of(context).size.width * 0.08,
                 ),
                 child: GestureDetector(
                   onTap: () {
@@ -256,8 +434,81 @@ class MyHome extends StatelessWidget {
               ),
               Padding(
                 padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.height * 0.41,
-                  left: MediaQuery.of(context).size.width * 0.01,
+                  top: MediaQuery.of(context).size.height * 0.62,
+                  left: MediaQuery.of(context).size.width * 0.06,
+                ),
+                child: GestureDetector(
+                  onTap: () {},
+                  child: Image.asset(
+                    'assets/images/ecomode.png',
+                    width: MediaQuery.of(context).size.width * 0.16,
+                    height: MediaQuery.of(context).size.width * 0.16,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).size.height * 0.715,
+                  left: MediaQuery.of(context).size.width * 0.06,
+                ),
+                child: GestureDetector(
+                  onTap: () {},
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/images/range.png',
+                        width: MediaQuery.of(context).size.width * 0.16,
+                        height: MediaQuery.of(context).size.width * 0.16,
+                      ),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                dashboardData != null &&
+                                        dashboardData!['data'] != null
+                                    ? '${dashboardData!['data'][0]['distance_to_empty']}'
+                                    : 'N/A',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  fontFamily: 'Goldman',
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const Text(
+                                'KM',
+                                style: TextStyle(
+                                  fontFamily: 'Goldman',
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 10,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Text(
+                            'Range',
+                            style: TextStyle(
+                              fontFamily: 'Goldman',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 13,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).size.height * 0.81,
+                  left: MediaQuery.of(context).size.width * 0.08,
                 ),
                 child: GestureDetector(
                   onTap: () => AppSettings.openAppSettings(
@@ -272,8 +523,8 @@ class MyHome extends StatelessWidget {
               ),
               Padding(
                 padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.height * 0.02,
-                  left: MediaQuery.of(context).size.width * 0.015,
+                  top: MediaQuery.of(context).size.height * 0.89,
+                  left: MediaQuery.of(context).size.width * 0.08,
                 ),
                 child: GestureDetector(
                   onTap: () {
@@ -290,12 +541,58 @@ class MyHome extends StatelessWidget {
                     fit: BoxFit.cover,
                   ),
                 ),
-              )
+              ),
+              Padding(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).size.height * 0.12,
+                  left: MediaQuery.of(context).size.width * 0.34,
+                ),
+                child: Text(
+                  getGreeting(),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    fontFamily: 'Goldman',
+                  ),
+                ),
+              ),
             ],
           );
         },
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
+    );
+  }
+
+  Widget _buildDialogOption(String imagePath, String label,
+      VoidCallback onPressed, double deviceWidth) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 255, 254, 254),
+        border: Border.all(color: Colors.black),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: TextButton(
+        onPressed: onPressed,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image(
+              image: AssetImage(imagePath),
+              width:
+                  deviceWidth * 0.07, // Adjust the size of the image as needed
+              height:
+                  deviceWidth * 0.07, // Adjust the size of the image as needed
+            ),
+            SizedBox(
+                height:
+                    deviceWidth * 0.02), // Add spacing between image and text
+            Text(
+              label,
+              style: const TextStyle(color: Colors.black),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -304,35 +601,32 @@ class MyHome extends StatelessWidget {
       {
         'image': 'assets/images/profile.png',
         'title': 'Profile',
-        'page': const ProfilePage(
-          sessionId: '',
-          vehicleId: '',
-        )
+        // 'page': const ProfilePage()
       },
       {
         'image': 'assets/images/service.png',
         'title': 'Services',
-        'page': ResponsePage()
+//        'page': const servicesPage()
       },
       {
         'image': 'assets/images/tirehealth.png',
         'title': 'Tyre Health',
-        'page': const TireHealthPage()
+        //  'page': const TireHealthPage()
       },
       {
         'image': 'assets/images/trackmybike.png',
         'title': 'Track MyBike',
-        'page': const LocateBikePage()
+        //  'page': const LocateBikePage()
       },
       {
         'image': 'assets/images/bikedetails.png',
         'title': 'Bike Details',
-        'page': const BikeDetailsPage()
+        // 'page': const BikeDetailsPage()
       },
       {
         'image': 'assets/images/support.png',
         'title': 'Support',
-        'page': const SupportPage()
+        // 'page': const SupportPage()
       },
     ];
 
@@ -386,249 +680,4 @@ class MyHome extends StatelessWidget {
       );
     }).toList();
   }
-
-  Widget _buildDialogOption(String imagePath, String label,
-      VoidCallback onPressed, double deviceWidth) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 255, 254, 254),
-        border: Border.all(color: Colors.black),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: TextButton(
-        onPressed: onPressed,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image(
-              image: AssetImage(imagePath),
-              width:
-                  deviceWidth * 0.07, // Adjust the size of the image as needed
-              height:
-                  deviceWidth * 0.07, // Adjust the size of the image as needed
-            ),
-            SizedBox(
-                height:
-                    deviceWidth * 0.02), // Add spacing between image and text
-            Text(
-              label,
-              style: const TextStyle(color: Colors.black),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class HomePageContent extends StatelessWidget {
-  const HomePageContent({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        const Positioned.fill(
-          child: GradientBox(),
-        ),
-        Positioned(
-            top: MediaQuery.of(context).size.height * 0.7, // Adjust as needed
-            left: 0,
-            right: -20,
-            child: Align(
-              alignment: Alignment.center,
-              child: Transform.rotate(
-                angle: -90 * (3.1415926535897932 / 180),
-                child: const Text(
-                  'Origin',
-                  style: TextStyle(
-                    fontFamily: 'ethnocentric',
-                    fontSize: 54,
-                    letterSpacing: 0,
-                    color: Color(0x532D2A2A),
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ),
-            )),
-        Positioned.fill(
-          child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(
-              MediaQuery.of(context).size.width > 600
-                  ? 185
-                  : 185, // Adjusted horizontal padding for larger screens
-              0,
-              0,
-              0,
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                'assets/images/image_bike.png',
-                width: 420,
-                height: MediaQuery.of(context).size.height,
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          top: 30,
-          left: 40,
-          right: 0,
-          child: Align(
-            child: ClipRRect(
-              child: Image.asset(
-                'assets/images/briskhome.png',
-                width: 160,
-                height: 18,
-              ),
-            ),
-          ),
-        ),
-        Center(
-          child: DashPrintPage(dashboardData: {}),
-        ),
-      ],
-    );
-  }
-}
-
-class GradientBox extends StatelessWidget {
-  const GradientBox({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        width: 100,
-        height: MediaQuery.of(context).size.height,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [
-              Color.fromRGBO(9, 84, 94, 0.517708),
-              Color(0xFF0C7785),
-              Color(0xFF09545E),
-            ],
-            transform: GradientRotation(90.3 * (3.1415927 / 90)),
-            stops: [0.0, 0.7103, 1.1206],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class DashPrintPage extends StatelessWidget {
-  final Map<String, dynamic> dashboardData;
-
-  DashPrintPage({required this.dashboardData});
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        double size = constraints.maxWidth * 0.5;
-
-        return Align(
-          alignment: Alignment.centerLeft,
-          child: Transform.rotate(
-            angle: 45 * (3.1415927 / 180),
-            child: Container(
-              width: size * 0.83,
-              height: size * 0.83,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  transform: GradientRotation(86.62 * (3.1415927 / 90)),
-                  stops: [0.2505, 0.7943, 1.2565, 1.658],
-                  colors: [
-                    Color(0xFF09545E),
-                    Color(0xFF0C7785),
-                    Color.fromRGBO(9, 84, 94, 0.517708),
-                    Colors.transparent,
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(size * 0.175),
-              ),
-              child: Center(
-                child: Transform.rotate(
-                  angle: -90 * (3.1415927 / 180),
-                  child: Container(
-                    width: size * 0.7,
-                    height: size * 0.7,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(size * 0.125),
-                    ),
-                    child: Center(
-                      child: Transform.rotate(
-                        angle: 90 * (3.1415927 / 90),
-                        child: Container(
-                          width: size * 0.6,
-                          height: size * 0.6,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              transform:
-                                  GradientRotation(90.3 * (3.1415927 / 90)),
-                              stops: [0.1376, 0.5174, 0.8403, 1.1206],
-                              colors: [
-                                Color(0xFF09545E),
-                                Color(0xFF0C7785),
-                                Color.fromRGBO(9, 84, 94, 0.517708),
-                                Colors.transparent,
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(size * 0.125),
-                          ),
-                          child: Center(
-                            child: Text(
-                              dashboardData != null &&
-                                      dashboardData['data'] != null &&
-                                      dashboardData['data'].isNotEmpty &&
-                                      dashboardData['data'][0]
-                                              ['battery_percentage'] !=
-                                          null
-                                  ? '${dashboardData['data'][0]['battery_percentage']}%'
-                                  : 'N/A',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class CustomClipPath extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.lineTo(0, 0); // Top left
-    path.lineTo(size.width, 0); // Top right
-    path.lineTo(size.width, size.height - 40); // Bottom right cut
-    path.lineTo(size.width - 85, size.height); // Bottom right corner
-    path.lineTo(0, size.height); // Bottom left
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }

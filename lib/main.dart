@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bike_project/response/homepage.dart';
 import 'package:bike_project/screens/home.dart';
 import 'package:bike_project/screens/otp.dart';
+import 'package:bike_project/screens/response.dart';
 import 'package:bike_project/screens/splashscreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -36,30 +37,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: 'login',
+      initialRoute: 'splashscreen',
       routes: {
         'splashscreen': (context) => const AnimatedSVGDemo(),
         'phone': (context) => const MyPhone(),
         'otpold': (context) => const Myotp(),
-        'home': (context) => MyHome(),
-        'login': (context) => FutureBuilder(
-              future: _getSessionId(),
-              builder: (context, AsyncSnapshot<String?> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Scaffold(
-                    body: Center(child: CircularProgressIndicator()),
-                  );
-                } else if (snapshot.hasData && snapshot.data != null) {
-                  return HomePage(
-                    sessionId: snapshot.data!,
-                    vehicleId: '', // Pass vehicleId if needed
-                  );
-                } else {
-                  return LoginPage();
-                }
-              },
-            ),
         'otp': (context) => OtpVerificationPage(),
+        'response': (context) => ResponsePage(),
+        'MyHome': (context) => MyHome(),
       },
     );
   }

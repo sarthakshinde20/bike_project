@@ -78,7 +78,7 @@ class _TireHealthPageState extends State<TireHealthPage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const MyHome()),
+                MaterialPageRoute(builder: (context) => MyHome()),
               );
             },
             child: SizedBox(

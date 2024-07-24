@@ -67,7 +67,7 @@ class _SupportPageState extends State<SupportPage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const MyHome()),
+                  MaterialPageRoute(builder: (context) => MyHome()),
                 );
               },
               child: SizedBox(

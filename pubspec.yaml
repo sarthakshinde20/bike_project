@@ -110,6 +110,10 @@ flutter:
     - family: Poppins
       fonts:
         - asset: fonts/Poppins-Regular.ttf
+
+    - family: Prompt
+      fonts:
+        - asset: fonts/Prompt-Regular.ttf       
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

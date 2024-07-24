@@ -9,9 +9,7 @@ class MapScreen extends StatefulWidget {
 class MapScreenState extends State<MapScreen> {
   late GoogleMapController mapController;
 
-  final LatLng _center =
-      const LatLng(37.7749, -122.4194); // Example coordinates
-
+  final LatLng _center = const LatLng(17.366, 78.476);
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
   }
@@ -20,8 +18,11 @@ class MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Google Maps Example'),
-        backgroundColor: Colors.green[700],
+        title: Text(
+          'Google Maps',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Color.fromARGB(255, 30, 89, 108),
       ),
       body: GoogleMap(
         onMapCreated: _onMapCreated,

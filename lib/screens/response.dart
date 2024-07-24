@@ -1,11 +1,9 @@
+import 'package:bike_project/response/dashboardpage.dart';
 import 'package:bike_project/response/find_my_vehicle.dart';
 import 'package:bike_project/response/get_user_details.dart';
 import 'package:bike_project/response/homepage.dart';
 import 'package:flutter/material.dart';
-
 import 'dart:convert';
-
-import '../response/dashboardpage.dart';
 
 class ResponsePage extends StatelessWidget {
   @override
@@ -32,7 +30,7 @@ class ResponsePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Response Page'),
+        title: const Text('Response Page'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -41,7 +39,7 @@ class ResponsePage extends StatelessWidget {
             Text('Response Body: $responseBody'),
             if (responseJson.containsKey('error'))
               Text('Error: ${responseJson['error']}'),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             if (!responseJson.containsKey('error')) ...[
               ElevatedButton(
                 onPressed: () {
@@ -55,7 +53,7 @@ class ResponsePage extends StatelessWidget {
                     ),
                   );
                 },
-                child: Text('Go to Home Page'),
+                child: const Text('Go to Home Page'),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -69,7 +67,7 @@ class ResponsePage extends StatelessWidget {
                     ),
                   );
                 },
-                child: Text('Go to Vehicle Dashboard'),
+                child: const Text('Go to Vehicle Dashboard'),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -83,21 +81,21 @@ class ResponsePage extends StatelessWidget {
                     ),
                   );
                 },
-                child: Text('Go to Get User Details'),
+                child: const Text('Go to Get User Details'),
               ),
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => FindMyVehiclePage(
+                      builder: (context) => FindMyVehicle(
                         sessionId: sessionId,
                         vehicleId: vehicleId,
                       ),
                     ),
                   );
                 },
-                child: Text('Go to Find My Vehicle'),
+                child: const Text('Go to Find My Vehicle'),
               ),
             ],
           ],

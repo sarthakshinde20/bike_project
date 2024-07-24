@@ -120,11 +120,15 @@ class _MyotpState extends State<Myotp> with CodeAutoFill {
                   child: ElevatedButton(
                     onPressed: () async {
                       try {
-                        PhoneAuthCredential credential = PhoneAuthProvider.credential(verificationId: MyPhone.verify, smsCode: _code!);
+                        PhoneAuthCredential credential =
+                            PhoneAuthProvider.credential(
+                                verificationId: MyPhone.verify,
+                                smsCode: _code!);
 
                         // Sign the user in (or link) with the credential
                         await auth.signInWithCredential(credential);
-                        Navigator.pushNamedAndRemoveUntil(context, "home", (route) => false);
+                        Navigator.pushNamedAndRemoveUntil(
+                            context, "home", (route) => false);
                       } catch (e) {
                         print('Wrong OTP');
                       }
@@ -137,7 +141,8 @@ class _MyotpState extends State<Myotp> with CodeAutoFill {
                     ),
                     child: const Text(
                       'Verify Phone Number',
-                      style: TextStyle(color: Colors.white), // Set text color to white
+                      style: TextStyle(
+                          color: Colors.white), // Set text color to white
                     ),
                   ),
                 ),
