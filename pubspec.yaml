@@ -51,6 +51,7 @@ dependencies:
   app_settings: ^5.1.1
   google_maps_flutter: ^2.6.1
   geocoding: ^3.0.0
+  http: ^1.2.2
   
   
 

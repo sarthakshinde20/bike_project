@@ -103,7 +103,7 @@ class MyHome extends StatelessWidget {
                 ),
               ],
             ),
-            ..._buildListTiles(context),
+            ..._buildListTiles(context, sessionId, vehicleId),
           ],
         ),
       ),
@@ -269,9 +269,7 @@ class MyHome extends StatelessWidget {
               Positioned.fill(
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(
-                    MediaQuery.of(context).size.width > 600
-                        ? 185
-                        : 185, 
+                    MediaQuery.of(context).size.width > 600 ? 185 : 185,
                     0,
                     0,
                     0,
@@ -596,12 +594,16 @@ class MyHome extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildListTiles(BuildContext context) {
+  List<Widget> _buildListTiles(
+      BuildContext context, String sessionId, String vehicleId) {
     final List<Map<String, dynamic>> items = [
       {
         'image': 'assets/images/profile.png',
         'title': 'Profile',
-        // 'page': const ProfilePage()
+        'page': ProfilePage(
+          sessionId: sessionId,
+          vehicleId: vehicleId,
+        )
       },
       {
         'image': 'assets/images/service.png',
@@ -656,7 +658,11 @@ class MyHome extends StatelessWidget {
             Navigator.push(
               context,
               PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
+                pageBuilder: (
+                  context,
+                  animation,
+                  secondaryAnimation,
+                ) =>
                     item['page'],
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:bike_project/screens/document_page.dart';
 import 'package:bike_project/screens/home.dart';
 import 'package:bike_project/screens/uploaddocument.dart';
 import 'package:flutter/material.dart';
@@ -92,7 +93,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => UploadImagePage()),
+                          builder: (context) => EditProfilePage(
+                                sessionId: widget.sessionId,
+                                vehicleId: widget.vehicleId,
+                              )),
                     );
                   },
                   child: Container(
