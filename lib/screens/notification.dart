@@ -1,10 +1,6 @@
 import 'package:bike_project/screens/home.dart';
 import 'package:flutter/material.dart';
 
-class BikeDetailsModel {
-  void dispose() {}
-}
-
 class NotificationPage extends StatefulWidget {
   const NotificationPage({super.key});
 
@@ -77,10 +73,8 @@ class _NotificationPageState extends State<NotificationPage> {
           alignment: const AlignmentDirectional(0, 0.9),
           child: GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => MyHome()),
-              );
+              int count = 0;
+              Navigator.of(context).popUntil((_) => count++ >= 1);
             },
             child: SizedBox(
               width: MediaQuery.of(context).size.width * 0.14,

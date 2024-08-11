@@ -1,140 +1,272 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:io';
 import 'dart:convert';
+import 'dart:typed_data';
 
-class DocumentPage extends StatefulWidget {
+class FetchPage extends StatefulWidget {
   final String sessionId;
   final String vehicleId;
 
-  DocumentPage({required this.sessionId, required this.vehicleId});
+  FetchPage({required this.sessionId, required this.vehicleId});
 
   @override
-  _DocumentPageState createState() => _DocumentPageState();
+  _FetchPageState createState() => _FetchPageState();
 }
 
-class _DocumentPageState extends State<DocumentPage> {
-  bool hasAdhar = false;
-  bool hasPanCard = false;
-  bool hasDrivingLicense = false;
-  bool isLoading = true;
-  bool hasError = false;
+class _FetchPageState extends State<FetchPage> {
+  List<Map<String, dynamic>> _fetchedDocuments = [];
+  final String apiUrl = 'http://34.93.202.185:5000';
+  bool _loading = true;
+  String _errorMessage = '';
+
+  Future<void> _fetchDocuments() async {
+    List<String> documentNames = [
+      'adharFront',
+      'adharBack',
+      'drivingLicense',
+      'panCard',
+      'insurance',
+      'rcbook'
+    ];
+
+    List<Map<String, dynamic>> documents = [];
+    for (String name in documentNames) {
+      try {
+        final response = await http.get(Uri.parse(
+            '$apiUrl/get_document?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}&user_document_name=$name'));
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          if (data['data'] is Map && data['data']['data'] is String) {
+            final doc = data['data'];
+            documents.add({
+              'name': _getDocumentName(name),
+              'data': base64Decode(doc['data']),
+            });
+          } else {
+            print('Unexpected data format for $name');
+          }
+        } else {
+          print('Failed to fetch $name');
+        }
+      } catch (e) {
+        print('Error fetching $name: $e');
+        setState(() {
+          _errorMessage = 'Failed to load documents. Please try again later.';
+        });
+      }
+    }
+
+    setState(() {
+      _fetchedDocuments = documents;
+      _loading = false;
+    });
+  }
+
+  String _getDocumentName(String documentType) {
+    const Map<String, String> documentNames = {
+      'adharFront': 'Adhaar Card Front',
+      'adharBack': 'Adhaar Card Back',
+      'drivingLicense': 'Driving License',
+      'panCard': 'PAN Card',
+      'insurance': 'Insurance',
+      'rcbook': 'RC Book',
+    };
+
+    return documentNames[documentType] ?? 'Unknown Document';
+  }
 
   @override
   void initState() {
     super.initState();
-    checkAndUploadDocuments();
+    _fetchDocuments();
   }
 
-  Future<void> checkAndUploadDocuments() async {
-    try {
-      // Step 1: Get the list of documents
-      var documentsResponse = await http.get(
-        Uri.parse(
-            'http://34.93.202.185:5000/user_documents?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}'),
-      );
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
-      if (documentsResponse.statusCode == 200) {
-        var documents = jsonDecode(documentsResponse.body);
-
-        // Step 2: Check for existing documents
-        hasAdhar = documents.any((doc) => doc['document_name'] == 'adhar');
-        hasPanCard = documents.any((doc) => doc['document_name'] == 'pan_card');
-        hasDrivingLicense =
-            documents.any((doc) => doc['document_name'] == 'driving_license');
-
-        // Step 3: Upload missing documents
-        if (!hasAdhar) {
-          await uploadDocument('adhar', '/path/to/adhar.jpg');
-        }
-        if (!hasPanCard) {
-          await uploadDocument('pan_card', '/path/to/pan_card.jpg');
-        }
-        if (!hasDrivingLicense) {
-          await uploadDocument(
-              'driving_license', '/path/to/driving_license.jpg');
-        }
-      } else {
-        hasError = true;
-      }
-    } catch (e) {
-      hasError = true;
-    }
-
-    setState(() {
-      isLoading = false;
-    });
+    return Scaffold(
+      body: Stack(
+        children: [
+          Align(
+            alignment: AlignmentDirectional(-2, -0.9),
+            child: ClipRRect(
+              child: Image.asset(
+                'assets/images/headline.png',
+                width: screenWidth * 0.9,
+                height: screenHeight * 0.3,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(
+              top: screenHeight * 0.155,
+              bottom: screenHeight * 0.025,
+              right: screenWidth * 0.15,
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'View Document',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontFamily: 'Goldman',
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        offset: Offset(2.0, 3.0),
+                        blurRadius: 3.0,
+                        color: Color.fromARGB(119, 0, 0, 0),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop();
+            },
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                vertical: screenHeight * 0.272,
+                horizontal: screenWidth * 0.05,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.arrow_back_ios,
+                    color: Colors.black,
+                    size: screenWidth * 0.05,
+                  ),
+                  SizedBox(width: screenWidth * 0.02),
+                  Text(
+                    'Back',
+                    style: TextStyle(
+                      fontFamily: 'Goldman',
+                      fontSize: screenWidth * 0.045,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            top: screenHeight * 0.32,
+            left: screenWidth * 0.05,
+            right: screenWidth * 0.05,
+            bottom: 0,
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : _errorMessage.isNotEmpty
+                    ? Center(child: Text(_errorMessage))
+                    : SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'View Document',
+                              style: TextStyle(
+                                fontFamily: 'Raleway',
+                                color: Colors.black,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 16.0),
+                            ..._fetchedDocuments.map((doc) {
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            FullScreenImagePage(
+                                          imageName: doc['name'],
+                                          imageData: doc['data'],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 100,
+                                        height: 100,
+                                        decoration: BoxDecoration(
+                                          border:
+                                              Border.all(color: Colors.grey),
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                        ),
+                                        child: Image.memory(
+                                          doc['data'],
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      SizedBox(height: 8.0),
+                                      Text(
+                                        doc['name'],
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ],
+                        ),
+                      ),
+          ),
+        ],
+      ),
+    );
   }
+}
 
-  Future<void> uploadDocument(String documentName, String filePath) async {
-    try {
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse('http://34.93.202.185:5000/api/v1/add_user_documents'),
-      );
+class FullScreenImagePage extends StatelessWidget {
+  final Uint8List imageData;
+  final String imageName;
 
-      request.fields.addAll({
-        'data': jsonEncode({
-          'vehicle_id': widget.vehicleId,
-          'document_name': documentName,
-          'session': widget.sessionId,
-        }),
-      });
-
-      request.files.add(await http.MultipartFile.fromPath('file', filePath));
-
-      var response = await request.send();
-
-      if (response.statusCode == 200) {
-        print('$documentName uploaded successfully');
-        setState(() {
-          if (documentName == 'adhar') hasAdhar = true;
-          if (documentName == 'pan_card') hasPanCard = true;
-          if (documentName == 'driving_license') hasDrivingLicense = true;
-        });
-      } else {
-        print('Failed to upload $documentName');
-      }
-    } catch (e) {
-      print('Error occurred during upload: $e');
-    }
-  }
+  FullScreenImagePage({required this.imageData, required this.imageName});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Documents'),
+        title: Text(imageName),
+        backgroundColor: Colors.black,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.close),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : hasError
-              ? Center(child: Text('Error occurred while fetching documents'))
-              : ListView(
-                  children: [
-                    ListTile(
-                      title: Text('Adhar'),
-                      trailing: Icon(
-                        hasAdhar ? Icons.check : Icons.close,
-                        color: hasAdhar ? Colors.green : Colors.red,
-                      ),
-                    ),
-                    ListTile(
-                      title: Text('PAN Card'),
-                      trailing: Icon(
-                        hasPanCard ? Icons.check : Icons.close,
-                        color: hasPanCard ? Colors.green : Colors.red,
-                      ),
-                    ),
-                    ListTile(
-                      title: Text('Driving License'),
-                      trailing: Icon(
-                        hasDrivingLicense ? Icons.check : Icons.close,
-                        color: hasDrivingLicense ? Colors.green : Colors.red,
-                      ),
-                    ),
-                  ],
-                ),
+      body: Center(
+        child: Image.memory(
+          imageData,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return Center(child: Icon(Icons.error));
+          },
+        ),
+      ),
     );
   }
 }

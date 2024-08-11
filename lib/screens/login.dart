@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -13,9 +15,18 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   bool _obscureText = true;
   final _formKey = GlobalKey<FormState>();
+  final String _countryCode = '+91';
 
+  @override
+  void initState() {
+    super.initState();
+    _mobileNumberController.text = _countryCode; // Set default country code
+  }
+
+  @override
   void dispose() {
     _passwordController.dispose();
+    _mobileNumberController.dispose();
     super.dispose();
   }
 
@@ -26,13 +37,14 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _sendOtp() async {
+    final mobileNumber = _mobileNumberController.text;
     final response = await http.post(
       Uri.parse('http://34.93.202.185:5000/api/v1/mobile_otp_login'),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
       body: jsonEncode(<String, String>{
-        'mobile_number': _mobileNumberController.text,
+        'mobile_number': mobileNumber,
       }),
     );
 
@@ -40,16 +52,53 @@ class _LoginPageState extends State<LoginPage> {
     print('Response Body: ${response.body}'); // Debugging statement
 
     if (response.statusCode == 200) {
-      Navigator.pushNamed(
-        context,
-        'otp',
-        arguments: _mobileNumberController.text,
-      );
+      try {
+        final responseBody = jsonDecode(response.body);
+
+        if (responseBody['message'] == 'success' &&
+            responseBody['status'] == 200) {
+          Navigator.pushNamed(
+            context,
+            'otp',
+            arguments: mobileNumber,
+          );
+        } else {
+          _showErrorDialog(
+              'You cannot login as your mobile number is not registered with it.');
+        }
+      } catch (e) {
+        _showErrorDialog('Error parsing response');
+      }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to send OTP')),
-      );
+      _showErrorDialog('Failed to send OTP');
     }
+  }
+
+  void _showErrorDialog(String message, {VoidCallback? onOK}) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Text(
+            message,
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w500,
+              fontFamily: 'Raleway',
+              color: Color.fromARGB(255, 0, 0, 0),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        );
+      },
+    );
+
+    Future.delayed(const Duration(seconds: 3), () {
+      Navigator.of(context).pop();
+      if (onOK != null) {
+        onOK();
+      }
+    });
   }
 
   @override
@@ -162,84 +211,29 @@ class _LoginPageState extends State<LoginPage> {
                           borderRadius: BorderRadius.circular(screenWidth *
                               0.04), // 4% of screen width for border radius
                         ),
+                        prefixStyle: const TextStyle(
+                          color: Colors.black,
+                        ),
                         errorText:
                             _validateMobileNumber(), // Show error message if validation fails
                       ),
                       keyboardType: TextInputType.phone,
                       inputFormatters: [
                         LengthLimitingTextInputFormatter(
-                            13), // Limit input to 10 digits
+                            13), // Limit input to 13 characters
                       ],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a mobile number';
                         }
-                        if (value.length != 10) {
-                          return 'Mobile number must be 10 digits';
+                        if (value.length < 13) {
+                          return 'Mobile number must be 10 digits with country code';
                         }
                         return null;
                       },
                     ),
                   ],
                 ),
-              ),
-            ),
-          ),
-          Align(
-            alignment: const AlignmentDirectional(-1, 0.2),
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.065, // 5% of screen width
-                vertical: screenHeight * 0.02, // 2% of screen height
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Text(
-                    'Password',
-                    textAlign: TextAlign.start,
-                    style: TextStyle(
-                      fontFamily: 'Raleway',
-                      fontSize: screenWidth * 0.04, // 4% of screen width
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Align(
-            alignment: const AlignmentDirectional(0, 0.38),
-            child: Padding(
-              padding: EdgeInsets.all(
-                  screenWidth * 0.065), // 5% of screen width for padding
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  SizedBox(
-                      height: screenHeight *
-                          0.02), // 2% of screen height for spacing
-                  TextField(
-                    controller: _passwordController,
-                    obscureText: _obscureText,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(screenWidth *
-                            0.04), // 4% of screen width for border radius
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureText
-                              ? Icons.visibility
-                              : Icons.visibility_off,
-                        ),
-                        onPressed: _togglePasswordVisibility,
-                      ),
-                    ),
-                    keyboardType: TextInputType.text,
-                  ),
-                ],
               ),
             ),
           ),
@@ -261,7 +255,7 @@ class _LoginPageState extends State<LoginPage> {
                           borderRadius: BorderRadius.circular(
                               screenWidth * 0.1), // 10% of screen width
                           side: BorderSide(
-                            color: Color.fromARGB(255, 9, 84,
+                            color: const Color.fromARGB(255, 9, 84,
                                 94), // Set your desired border color
                             width: screenWidth * 0.005, // 0.5% of screen width
                           ),
@@ -289,7 +283,7 @@ class _LoginPageState extends State<LoginPage> {
 
   String? _validateMobileNumber() {
     final value = _mobileNumberController.text;
-    if (value.length < 10) {
+    if (value.length < 13) {
       return 'Mobile number must be 10 digits';
     }
     return null; // No error

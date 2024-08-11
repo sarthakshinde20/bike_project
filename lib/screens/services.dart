@@ -76,10 +76,10 @@ class _servicesPageState extends State<servicesPage> {
           alignment: const AlignmentDirectional(0, 0.95),
           child: GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => MyHome()),
-              );
+              Future.delayed(Duration(milliseconds: 0), () {
+                int count = 0;
+                Navigator.of(context).popUntil((_) => count++ >= 2);
+              });
             },
             child: SizedBox(
               width: MediaQuery.of(context).size.width * 0.14,

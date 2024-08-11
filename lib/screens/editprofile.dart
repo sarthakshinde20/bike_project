@@ -1,162 +1,227 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'dart:typed_data';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class EditProfileModel {
-  FFUploadedFile? uploadedLocalFile1;
-  bool isDataUploading1 = false;
-
-  void dispose() {}
-}
-
-class FFUploadedFile {
-  final String name;
-  final Uint8List? bytes;
-  final double? height;
-  final double? width;
-  final String? blurHash;
-
-  FFUploadedFile({
-    required this.name,
-    required this.bytes,
-    this.height,
-    this.width,
-    this.blurHash,
-  });
-}
-
-class EditProfilePage extends StatefulWidget {
-  const EditProfilePage(
-      {super.key, required this.sessionId, required this.vehicleId});
-
+class UploadPage extends StatefulWidget {
   final String sessionId;
   final String vehicleId;
 
+  UploadPage({required this.sessionId, required this.vehicleId});
+
   @override
-  _EditProfilePageState createState() => _EditProfilePageState();
+  _UploadPageState createState() => _UploadPageState();
 }
 
-class _EditProfilePageState extends State<EditProfilePage> {
-  late EditProfileModel _model;
-  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-  XFile? _aadharCardImage1;
-  XFile? _aadharCardImage2;
-  XFile? _panCardImage;
-  XFile? _drivingLicenceImage;
-  XFile? _insuranceImage;
-  XFile? _rcbookImage;
-  Map<String, dynamic>? userDocument;
+class _UploadPageState extends State<UploadPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  File? _adharFrontFile;
+  File? _adharBackFile;
+  File? _drivingLicenseFile;
+  File? _panCardFile;
+  File? _insuranceFile;
+  File? _rcbookFile;
+  final picker = ImagePicker();
+  final String apiUrl = 'http://34.93.202.185:5000';
 
-  @override
-  void initState() {
-    super.initState();
-    _model = EditProfileModel();
-    _fetchUserDocuments();
-  }
-
-  @override
-  void dispose() {
-    _model.dispose();
-    super.dispose();
-  }
-
-  Future<void> _fetchUserDocuments() async {
-    final response = await http.get(Uri.parse(
-        'http://34.93.202.185:5000/user_documents?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}'));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-
-      setState(() {
-        userDocument = data;
-        // Parse the response data and set the image variables accordingly
-        if (userDocument != null) {
-          _aadharCardImage1 = userDocument!['aadharCardImage1'] != null
-              ? XFile(userDocument!['aadharCardImage1'])
-              : null;
-          _aadharCardImage2 = userDocument!['aadharCardImage2'] != null
-              ? XFile(userDocument!['aadharCardImage2'])
-              : null;
-          _panCardImage = userDocument!['panCardImage'] != null
-              ? XFile(userDocument!['panCardImage'])
-              : null;
-          _insuranceImage = userDocument!['insuranceImage'] != null
-              ? XFile(userDocument!['insuranceImage'])
-              : null;
-          _drivingLicenceImage = userDocument!['drivingLicenceImage'] != null
-              ? XFile(userDocument!['drivingLicenceImage'])
-              : null;
-          _rcbookImage = userDocument!['rcbookImage'] != null
-              ? XFile(userDocument!['rcbookImage'])
-              : null;
-        }
-      });
-    } else {
-      // Handle error
-      print('Failed to load user documents');
+  Future<void> _pickImage(String documentType, String title) async {
+    try {
+      await _showImageSourceDialog(documentType, title);
+    } catch (e) {
+      _showDialog('Error picking image: $e', 'Error', Icons.error);
     }
   }
 
-  Future<void> _uploadDocument(String documentType, XFile image) async {
-    final uri = Uri.parse(
-        'http://34.93.202.185:5000/api/v1/add_user_documents'); // Update with your endpoint
+  Future<void> _showImageSourceDialog(String documentType, String title) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Position the front of your $title in the frame',
+            style: const TextStyle(
+                fontFamily: 'Raleway',
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.black),
+          ),
+          actions: <Widget>[
+            Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.center, // Center the buttons horizontally
+              children: <Widget>[
+                TextButton(
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                    final pickedFile =
+                        await picker.pickImage(source: ImageSource.camera);
+                    if (pickedFile != null) {
+                      setState(() {
+                        _updateImageFile(documentType, File(pickedFile.path));
+                      });
+                    }
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Image.asset('assets/images/camera.png',
+                          width: 50, height: 50),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Take photo',
+                        style: TextStyle(
+                            fontFamily: 'Raleway',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                    final pickedFile =
+                        await picker.pickImage(source: ImageSource.gallery);
+                    if (pickedFile != null) {
+                      setState(() {
+                        _updateImageFile(documentType, File(pickedFile.path));
+                      });
+                    }
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Image.asset('assets/images/gallery.png',
+                          width: 50, height: 50),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'From gallery',
+                        style: TextStyle(
+                            fontFamily: 'Raleway',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-    var request = http.MultipartRequest('POST', uri)
-      ..fields['documentType'] = documentType
-      ..files.add(await http.MultipartFile.fromPath(
-        'file', // The name of the file parameter
-        image.path,
-      ));
+  void _updateImageFile(String documentType, File imageFile) {
+    setState(() {
+      switch (documentType) {
+        case 'adharFront':
+          _adharFrontFile = imageFile;
+          break;
+        case 'adharBack':
+          _adharBackFile = imageFile;
+          break;
+        case 'drivingLicense':
+          _drivingLicenseFile = imageFile;
+          break;
+        case 'panCard':
+          _panCardFile = imageFile;
+          break;
+        case 'insurance':
+          _insuranceFile = imageFile;
+          break;
+        case 'rcbook':
+          _rcbookFile = imageFile;
+          break;
+      }
+    });
+  }
+
+  Future<void> _uploadImage(String documentName, File? imageFile) async {
+    if (imageFile == null) {
+      _showDialog('Error', 'No image selected for $documentName', Icons.error);
+      return;
+    }
 
     try {
-      final response = await request.send();
+      var request = http.MultipartRequest(
+          'POST', Uri.parse('$apiUrl/api/v1/add_user_documents'));
+      request.fields['data'] = jsonEncode({
+        'vehicle_id': widget.vehicleId,
+        'document_name': documentName,
+        'session': widget.sessionId,
+      });
+
+      request.files
+          .add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+      var response = await request.send();
       final responseBody = await response.stream.bytesToString();
 
       if (response.statusCode == 200) {
-        print('Successfully uploaded $documentType. Response: $responseBody');
+        _showDialog('Success', 'Upload successful for $documentName',
+            Icons.check_circle);
       } else {
-        print(
-            'Failed to upload $documentType. Status: ${response.statusCode}. Response: $responseBody');
+        _showDialog('Error', 'Upload failed for $documentName: $responseBody',
+            Icons.error);
       }
     } catch (e) {
-      print('Error occurred while uploading $documentType: $e');
+      _showDialog('Error', 'Error uploading image: $e', Icons.error);
     }
   }
 
-  Future<void> _handleUpload() async {
-    if (_aadharCardImage1 != null) {
-      await _uploadDocument('Aadhar Card Image 1', _aadharCardImage1!);
-    }
-    if (_aadharCardImage2 != null) {
-      await _uploadDocument('Aadhar Card Image 2', _aadharCardImage2!);
-    }
-    if (_panCardImage != null) {
-      await _uploadDocument('Pan Card', _panCardImage!);
-    }
-    if (_insuranceImage != null) {
-      await _uploadDocument('Insurance', _insuranceImage!);
-    }
-    if (_drivingLicenceImage != null) {
-      await _uploadDocument('Driving Licence', _drivingLicenceImage!);
-    }
-    if (_rcbookImage != null) {
-      await _uploadDocument('RC Book', _rcbookImage!);
-    }
+  void _showDialog(String title, String message, IconData icon) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        Future.delayed(const Duration(seconds: 2), () {
+          Navigator.of(context).pop();
+        });
+
+        return AlertDialog(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon,
+                  color:
+                      icon == Icons.check_circle ? Colors.green : Colors.red),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: const TextStyle(
+                    fontFamily: 'Raleway',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 24),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          content: Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+                fontFamily: 'Raleway',
+                fontWeight: FontWeight.w600,
+                fontSize: 14),
+          ),
+          actions: <Widget>[
+            // The OK button is removed because the dialog will close automatically
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final double topPadding = size.height * 0.1;
-    final double sidePadding = size.width * 0.05;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      key: scaffoldKey,
+      key: _scaffoldKey,
       body: Stack(
         children: [
           Align(
@@ -164,17 +229,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
             child: ClipRRect(
               child: Image.asset(
                 'assets/images/headline.png',
-                width: screenWidth * 0.9, // 90% of screen width
-                height: screenHeight * 0.3, // 30% of screen height
+                width: screenWidth * 0.9,
+                height: screenHeight * 0.3,
                 fit: BoxFit.contain,
               ),
             ),
           ),
           Padding(
             padding: EdgeInsets.only(
-              top: screenHeight * 0.155, // 15% of screen height
-              bottom: screenHeight * 0.025, // 2.5% of screen height
-              right: screenWidth * 0.15, // 35% of screen width
+              top: screenHeight * 0.155,
+              bottom: screenHeight * 0.025,
+              right: screenWidth * 0.15,
             ),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -184,7 +249,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   style: TextStyle(
                     fontSize: 28,
                     fontFamily: 'Goldman',
-                    color: Color.fromARGB(255, 255, 255, 255),
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                     shadows: [
                       Shadow(
@@ -204,23 +269,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
             },
             child: Padding(
               padding: EdgeInsets.symmetric(
-                vertical: MediaQuery.of(context).size.height * 0.272,
-                horizontal: MediaQuery.of(context).size.width * 0.05,
+                vertical: screenHeight * 0.272,
+                horizontal: screenWidth * 0.05,
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.arrow_back_ios,
                     color: Colors.black,
-                    size: MediaQuery.of(context).size.width * 0.05,
+                    size: screenWidth * 0.05,
                   ),
-                  SizedBox(width: MediaQuery.of(context).size.width * 0),
+                  SizedBox(width: screenWidth * 0.02),
                   Text(
                     'Back',
                     style: TextStyle(
                       fontFamily: 'Goldman',
-                      fontSize: MediaQuery.of(context).size.width *
-                          0.045, // Adjust text size
+                      fontSize: screenWidth * 0.045,
                       fontWeight: FontWeight.w700,
                       color: Colors.black,
                     ),
@@ -229,69 +293,83 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 250),
-            child: ListView(
-              padding: EdgeInsets.fromLTRB(sidePadding, 10, sidePadding, 10),
-              children: [
-                const Text(
-                  'Manage Document',
-                  style: TextStyle(
-                    fontFamily: 'Raleway',
-                    color: Colors.black,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                SizedBox(height: topPadding - 50),
-                _buildDocumentSection('Aadhar Card', _aadharCardImage1,
-                    _aadharCardImage2, 'Aadhar Card'),
-                _buildDocumentSection(
-                    'Pan Card', _panCardImage, null, 'Pan Card'),
-                _buildDocumentSection(
-                    'Insurance', _insuranceImage, null, 'Insurance'),
-                _buildDocumentSection('Driving Licence', _drivingLicenceImage,
-                    null, 'Driving Licence'),
-                _buildDocumentSection('RC Book', _rcbookImage, null, 'RC Book'),
-                SizedBox(height: topPadding - 60),
-                Align(
-                  alignment: const AlignmentDirectional(0, 0.30),
-                  child: SizedBox(
-                    width: 317,
-                    height: 55,
-                    child: TextButton(
-                      onPressed: _handleUpload,
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(73),
-                        ),
-                      ),
-                      child: Ink(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(1000),
-                          border: Border.all(
-                            color: Colors.black,
-                            width: 2.0,
-                          ),
-                        ),
-                        child: Container(
-                          alignment: Alignment.center,
-                          child: const Text(
-                            'Upload',
-                            style: TextStyle(
-                              fontFamily: 'Goldman',
-                              color: Color.fromARGB(255, 9, 84, 94),
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
+          Positioned(
+            top: screenHeight * 0.32,
+            left: screenWidth * 0.05,
+            right: screenWidth * 0.05,
+            bottom: 0,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(top: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Manage Document',
+                    style: TextStyle(
+                      fontFamily: 'Raleway',
+                      color: Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildDocumentSection(
+                          'Adhaar Card Front',
+                          'adharFront',
+                          _adharFrontFile,
+                          () => _pickImage('adharFront', 'Adhaar Card Front'),
+                          () => _uploadImage('adharFront', _adharFrontFile),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildDocumentSection(
+                          'Adhaar Card Back',
+                          'adharBack',
+                          _adharBackFile,
+                          () => _pickImage('adharBack', 'Adhaar Card Back'),
+                          () => _uploadImage('adharBack', _adharBackFile),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildDocumentSection(
+                    'Driving License',
+                    'drivingLicense',
+                    _drivingLicenseFile,
+                    () => _pickImage('drivingLicense', 'Driving License'),
+                    () => _uploadImage('drivingLicense', _drivingLicenseFile),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildDocumentSection(
+                    'PAN Card',
+                    'panCard',
+                    _panCardFile,
+                    () => _pickImage('panCard', 'PAN Card'),
+                    () => _uploadImage('panCard', _panCardFile),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildDocumentSection(
+                    'Insurance',
+                    'insurance',
+                    _insuranceFile,
+                    () => _pickImage('insurance', 'Insurance'),
+                    () => _uploadImage('insurance', _insuranceFile),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildDocumentSection(
+                    'RC Book',
+                    'rcbook',
+                    _rcbookFile,
+                    () => _pickImage('rcbook', 'RC Book'),
+                    () => _uploadImage('rcbook', _rcbookFile),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -300,180 +378,62 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   Widget _buildDocumentSection(
-      String title, XFile? image1, XFile? image2, String document) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(
-        title,
-        style: const TextStyle(
-          fontFamily: 'Raleway',
-          fontSize: 18,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      const SizedBox(height: 20),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          if (document == 'Aadhar Card') ...[
-            _buildImagePicker(
-              image: image1,
-              document: document,
-              index: 1,
-              onRemove: () {
-                setState(() {
-                  _aadharCardImage1 = null;
-                });
-              },
-            ),
-            const SizedBox(width: 10),
-            _buildImagePicker(
-              image: image2,
-              document: document,
-              index: 2,
-              onRemove: () {
-                setState(() {
-                  _aadharCardImage2 = null;
-                });
-              },
-            ),
-          ] else ...[
-            _buildImagePicker(
-              image: image1,
-              document: document,
-              index: 0,
-              onRemove: () {
-                setState(() {
-                  if (document == 'Pan Card') {
-                    _panCardImage = null;
-                  } else if (document == 'Insurance') {
-                    _insuranceImage = null;
-                  } else if (document == 'Driving Licence') {
-                    _drivingLicenceImage = null;
-                  } else if (document == 'RC Book') {
-                    _rcbookImage = null;
-                  }
-                });
-              },
-            ),
-          ],
-        ],
-      ),
-      const SizedBox(height: 40),
-    ]);
-  }
-
-  Widget _buildImagePicker({
-    required XFile? image,
-    required String document,
-    required int index,
-    required VoidCallback onRemove,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
+    String title,
+    String documentType,
+    File? imageFile,
+    VoidCallback onPickImage,
+    VoidCallback onUploadImage,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GestureDetector(
-          onTap: image == null
-              ? () => _showImageSourceDialog(document, index)
-              : null,
-          child: image == null
-              ? Image.asset(
-                  'assets/images/document.png', // Replace with your image asset path
-                  height: 100.0,
-                  width: 100.0,
-                )
-              : Image.file(
-                  File(image.path),
-                  height: 150.0,
-                  width: 100.0,
-                ),
+        Text(
+          title,
+          style: const TextStyle(
+              fontSize: 16, fontFamily: 'Raleway', fontWeight: FontWeight.bold),
         ),
-        if (image != null) ...[
-          const SizedBox(
-              width: 8.0), // Space between the image and remove button
-          GestureDetector(
-            onTap: onRemove,
-            child: Container(
-              width: 25.0,
-              height: 25.0,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color.fromARGB(255, 242, 83, 83),
-                  width: 1.0,
-                ),
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.close,
-                  color: Color.fromARGB(255, 242, 83, 83),
-                  size: 15.0,
-                ),
-              ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: onPickImage,
+          child: Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              border: Border.all(
+                  color: const Color.fromARGB(255, 43, 214, 28), width: 5),
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+            child: imageFile != null
+                ? Image.file(imageFile, fit: BoxFit.cover)
+                : const Center(
+                    child: Icon(
+                      Icons.add,
+                      size: 40.0,
+                      color: Color.fromARGB(255, 43, 214, 28),
+                    ),
+                  ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        ElevatedButton(
+          onPressed: onUploadImage,
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(1000),
+              side: const BorderSide(color: Colors.black, width: 2.0),
             ),
           ),
-        ],
+          child: const Text(
+            'Upload',
+            style: TextStyle(
+              fontFamily: 'Goldman',
+              color: Color.fromARGB(255, 9, 84, 94),
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
       ],
     );
-  }
-
-  Future<void> _showImageSourceDialog(String document, int index) async {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Select Image Source'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Camera'),
-              onPressed: () async {
-                Navigator.of(context).pop();
-                final ImagePicker _picker = ImagePicker();
-                final XFile? pickedImage = await _picker.pickImage(
-                  source: ImageSource.camera,
-                );
-                if (pickedImage != null) {
-                  setState(() {
-                    _updateImage(document, index, pickedImage);
-                  });
-                }
-              },
-            ),
-            TextButton(
-              child: const Text('Gallery'),
-              onPressed: () async {
-                Navigator.of(context).pop();
-                final ImagePicker _picker = ImagePicker();
-                final XFile? pickedImage = await _picker.pickImage(
-                  source: ImageSource.gallery,
-                );
-                if (pickedImage != null) {
-                  setState(() {
-                    _updateImage(document, index, pickedImage);
-                  });
-                }
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _updateImage(String document, int index, XFile pickedImage) {
-    if (document == 'Aadhar Card') {
-      if (index == 1) {
-        _aadharCardImage1 = pickedImage;
-      } else if (index == 2) {
-        _aadharCardImage2 = pickedImage;
-      }
-    } else if (document == 'Pan Card') {
-      _panCardImage = pickedImage;
-    } else if (document == 'Insurance') {
-      _insuranceImage = pickedImage;
-    } else if (document == 'Driving Licence') {
-      _drivingLicenceImage = pickedImage;
-    } else if (document == 'RC Book') {
-      _rcbookImage = pickedImage;
-    }
   }
 }
