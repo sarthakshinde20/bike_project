@@ -79,7 +79,7 @@ class MapScreenState extends State<MapScreen> {
   _getDirections() async {
     if (_destination != null && mapController != null) {
       PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-        'AIzaSyBVn1idxtxfsovEZx8uUVc4NEp1pn9_FEE', // Replace with your Google Maps API key
+        'AIzaSyDIEuHp8fW56w3FpPw02icU6TtmRkKxYm4', // Replace with your Google Maps API key
         PointLatLng(_startingLocation.latitude, _startingLocation.longitude),
         PointLatLng(_destination!.latitude, _destination!.longitude),
       );
@@ -106,7 +106,7 @@ class MapScreenState extends State<MapScreen> {
   Future<List<String>> _getPlaceSuggestions(String input) async {
     final response = await http.get(
       Uri.parse(
-        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&key=AIzaSyBVn1idxtxfsovEZx8uUVc4NEp1pn9_FEE',
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&key=AIzaSyDIEuHp8fW56w3FpPw02icU6TtmRkKxYm4',
       ),
     );
     if (response.statusCode == 200) {

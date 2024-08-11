@@ -153,7 +153,7 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
                                 children: [
                                   _buildDialogOption(
                                     'assets/images/horn_light.png',
-                                    'Honk & Trun On Lights',
+                                    'Honk & Turn On Lights',
                                     () {},
                                     MediaQuery.of(context).size.width,
                                   ),
