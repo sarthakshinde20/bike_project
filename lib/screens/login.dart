@@ -49,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     print('HTTP Status Code: ${response.statusCode}');
-    print('Response Body: ${response.body}'); // Debugging statement
+    print('Response Body: ${response.body}');
 
     if (response.statusCode == 200) {
       try {
@@ -62,6 +62,8 @@ class _LoginPageState extends State<LoginPage> {
             'otp',
             arguments: mobileNumber,
           );
+          _showErrorDialog(
+              'Your Mobile Number verified, OTP sent successfully');
         } else {
           _showErrorDialog(
               'You cannot login as your mobile number is not registered with it.');

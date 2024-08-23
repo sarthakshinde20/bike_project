@@ -40,6 +40,8 @@ class _AnimatedVideoDemoState extends State<AnimatedVideoDemo>
       final prefs = await SharedPreferences.getInstance();
       final sessionId = prefs.getString('sessionId');
       final vehicleId = prefs.getString('vehicleId');
+      final name = prefs.getString('name');
+
       final dashboardDataJson = prefs.getString('dashboardData');
       final responseDataJson = prefs.getString('responseData');
 
@@ -52,6 +54,7 @@ class _AnimatedVideoDemoState extends State<AnimatedVideoDemo>
 
       if (sessionId != null &&
           vehicleId != null &&
+          name != null &&
           dashboardData != null &&
           responseData != null) {
         // Navigate to the home page with all required arguments
@@ -61,6 +64,7 @@ class _AnimatedVideoDemoState extends State<AnimatedVideoDemo>
           arguments: {
             'sessionId': sessionId,
             'vehicleId': vehicleId,
+            'name': name,
             'dashboardData': dashboardData,
             'responseData': responseData,
           },

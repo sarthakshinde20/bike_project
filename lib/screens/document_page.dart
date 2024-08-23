@@ -135,7 +135,7 @@ class _FetchPageState extends State<FetchPage> {
             },
             child: Padding(
               padding: EdgeInsets.symmetric(
-                vertical: screenHeight * 0.272,
+                vertical: screenHeight * 0.285,
                 horizontal: screenWidth * 0.05,
               ),
               child: Row(

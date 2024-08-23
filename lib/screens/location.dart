@@ -30,6 +30,12 @@ class MapScreenState extends State<MapScreen> {
   late PolylinePoints polylinePoints;
   final Set<Marker> _markers = {};
 
+  // Define the LatLngBounds for India
+  final LatLngBounds _indiaBounds = LatLngBounds(
+    southwest: LatLng(6.4627, 68.1097), // Southwest coordinate (approx.)
+    northeast: LatLng(35.5133, 97.3954), // Northeast coordinate (approx.)
+  );
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +45,10 @@ class MapScreenState extends State<MapScreen> {
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+    // Apply the LatLngBounds to restrict the map
+    mapController!.moveCamera(
+      CameraUpdate.newLatLngBounds(_indiaBounds, 0),
+    );
     if (_startingLocation != null) {
       _updateCameraPosition(_startingLocation);
       _updateOrAddMarker(_startingLocation, "Starting Location");
@@ -47,13 +57,14 @@ class MapScreenState extends State<MapScreen> {
 
   Future<void> _fetchStartingLocation() async {
     final response = await http.get(Uri.parse(
-      'http://34.93.202.185:5000/api/v1/vehicle/find_my_vehicle?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}',
+      'http://34.93.202.185:5000/api/v1/get_vehicle_dashboard?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}',
     ));
+    print('Response Body: ${response.body}'); // Debugging statement
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final longitude = double.parse(data['data']['latitude']);
-      final latitude = double.parse(data['data']['longitude']);
+      final longitude = double.parse(data['data'][0]['longitude']);
+      final latitude = double.parse(data['data'][0]['latitude']);
 
       setState(() {
         _startingLocation = LatLng(latitude, longitude);
@@ -70,9 +81,15 @@ class MapScreenState extends State<MapScreen> {
 
   _updateCameraPosition(LatLng position) {
     if (mapController != null) {
-      mapController!.animateCamera(CameraUpdate.newCameraPosition(
-        CameraPosition(target: position, zoom: 15.0),
-      ));
+      // Ensure that the camera stays within India bounds
+      mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: position,
+            zoom: 15.0,
+          ),
+        ),
+      );
     }
   }
 
@@ -198,6 +215,10 @@ class MapScreenState extends State<MapScreen> {
             polylines: _polylines,
             markers: _markers,
             myLocationEnabled: true,
+            minMaxZoomPreference: const MinMaxZoomPreference(
+                5.0, 20.0), // Optional: Restrict zoom levels
+            cameraTargetBounds:
+                CameraTargetBounds(_indiaBounds), // Restrict camera to India
           ),
           Positioned(
             top: screenHeight * 0.08,
@@ -233,7 +254,7 @@ class MapScreenState extends State<MapScreen> {
             right: 0,
             child: Container(
               width: double.infinity,
-              height: 230,
+              height: 200,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: const BorderRadius.only(

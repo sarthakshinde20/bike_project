@@ -182,7 +182,7 @@ class BikeDetailsPage extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'Raleway',
+                fontFamily: 'Poppins',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
@@ -206,7 +206,7 @@ class BikeDetailsPage extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'Raleway',
+                fontFamily: 'Poppins',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
@@ -230,7 +230,7 @@ class BikeDetailsPage extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'Raleway',
+                fontFamily: 'Poppins',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),

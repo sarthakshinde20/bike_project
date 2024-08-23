@@ -7,10 +7,11 @@ class FindMyVehicle extends StatefulWidget {
   final String sessionId;
   final String vehicleId;
 
-  FindMyVehicle(
-      {required this.sessionId,
-      required this.vehicleId,
-      Map<String, dynamic>? dashboardData});
+  FindMyVehicle({
+    required this.sessionId,
+    required this.vehicleId,
+    Map<String, dynamic>? dashboardData,
+  });
 
   @override
   _FindMyVehicleState createState() => _FindMyVehicleState();
@@ -30,14 +31,15 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
   Future<void> fetchVehicleLocation() async {
     final response = await http.get(
       Uri.parse(
-          'http://34.93.202.185:5000/api/v1/vehicle/find_my_vehicle?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}'),
+          'http://34.93.202.185:5000/api/v1/get_vehicle_dashboard?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}'),
     );
+    print('Response Body: ${response.body}'); // Debugging statement
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       setState(() {
         vehicleLocation = {
-          'latitude': double.parse(data['data']['latitude'].toString()),
-          'longitude': double.parse(data['data']['longitude'].toString()),
+          'latitude': double.parse(data['data'][0]['latitude'].toString()),
+          'longitude': double.parse(data['data'][0]['longitude'].toString()),
         };
         isLoading = false;
       });
@@ -46,6 +48,19 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
         isLoading = false;
       });
       print('Failed to load location');
+    }
+  }
+
+  Future<void> turnOnLights() async {
+    final response = await http.get(
+      Uri.parse(
+          'http://34.93.202.185:5000/api/v1/vehicle/find_my_vehicle?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}'),
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print('Lights turned on: ${data['message']}');
+    } else {
+      print('Failed to turn on lights');
     }
   }
 
@@ -154,7 +169,11 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
                                   _buildDialogOption(
                                     'assets/images/horn_light.png',
                                     'Honk & Turn On Lights',
-                                    () {},
+                                    () async {
+                                      Navigator.of(context)
+                                          .pop(); // Close the dialog
+                                      await turnOnLights(); // Call the second API
+                                    },
                                     MediaQuery.of(context).size.width,
                                   ),
                                 ],
@@ -227,7 +246,7 @@ class VehicleMap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final LatLng vehicleLocation = LatLng(longitude, latitude);
+    final LatLng vehicleLocation = LatLng(latitude, longitude);
 
     return GoogleMap(
       initialCameraPosition: CameraPosition(

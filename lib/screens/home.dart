@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:app_settings/app_settings.dart';
 import 'package:bike_project/screens/trackmybike.dart';
 import 'package:bike_project/screens/bike_detail.dart';
@@ -29,23 +31,34 @@ class MyHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get the arguments from the route
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    // Get the arguments from the route
     final Map<String, dynamic> args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final String sessionId = args['sessionId'] as String? ?? 'No session ID';
     final String vehicleId = args['vehicleId'] as String? ?? 'No vehicle ID';
+    final String name = args['name'] as String? ?? 'No Name';
+
     final Map<String, dynamic>? dashboardData =
         args['dashboardData'] as Map<String, dynamic>?;
     final Map<String, dynamic>? responseData =
         args['responseData'] as Map<String, dynamic>?;
 
+    final bool isCharging = dashboardData != null &&
+        dashboardData['data'] != null &&
+        dashboardData['data'][0]['battery_charge_status'] == 'not_charging';
+    print('Battery Charging Status: $isCharging');
+
+    final String? profilePicture =
+        dashboardData != null && dashboardData['profile_picture'] != null
+            ? dashboardData['profile_picture']
+            : null;
+    print('Profile Picture: $profilePicture');
     return WillPopScope(
       onWillPop: () async {
-        // Exiting the app
         SystemNavigator.pop();
-        return false; // Return false to prevent the default back navigation
+        return false;
       },
       child: Scaffold(
         drawer: Drawer(
@@ -67,27 +80,14 @@ class MyHome extends StatelessWidget {
                   ),
                   Padding(
                     padding: EdgeInsets.only(
-                      top: screenHeight * 0.12, // 15% of screen height
+                      top: screenHeight * 0.125, // 15% of screen height
                       bottom: screenHeight * 0.025, // 2.5% of screen height
-                      right: screenWidth * 0.25, // 35% of screen width
+                      right: screenWidth * 0.15, // 35% of screen width
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Padding(
-                          padding: EdgeInsets.only(
-                            right: screenWidth * 0.0, // 0% of screen width
-                          ), // Adjust the padding as needed
-                          child: IconButton(
-                            icon: const Icon(
-                              Icons.arrow_back_ios,
-                              color: Color.fromARGB(255, 255, 255, 255),
-                              size: 24,
-                            ),
-                            onPressed: () => Navigator.of(context).pop(),
-                          ),
-                        ),
-                        const Text(
+                        Text(
                           'Menu',
                           style: TextStyle(
                             fontSize: 28,
@@ -96,7 +96,7 @@ class MyHome extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                             shadows: [
                               Shadow(
-                                offset: Offset(3.0, 4.0),
+                                offset: Offset(2.0, 3.0),
                                 blurRadius: 3.0,
                                 color: Color.fromARGB(119, 0, 0, 0),
                               ),
@@ -115,8 +115,8 @@ class MyHome extends StatelessWidget {
                   ),
                 ],
               ),
-              ..._buildListTiles(
-                  context, sessionId, vehicleId, dashboardData, responseData),
+              ..._buildListTiles(context, sessionId, vehicleId, name,
+                  dashboardData, responseData),
             ],
           ),
         ),
@@ -180,17 +180,17 @@ class MyHome extends StatelessWidget {
                             ),
                             child: Center(
                               child: Transform.rotate(
-                                angle: 90 * (pi / 90),
+                                angle: 90 * (pi / 180),
                                 child: Container(
                                   width: size * 0.56,
                                   height: size * 0.56,
                                   decoration: BoxDecoration(
                                     gradient: const LinearGradient(
-                                      begin: Alignment.centerLeft,
+                                      begin: Alignment.bottomLeft,
                                       end: Alignment.centerRight,
                                       transform:
-                                          GradientRotation(90.3 * (pi / 90)),
-                                      stops: [0.1376, 0.5174, 0.8403, 1.1206],
+                                          GradientRotation(-90.3 * (pi / 180)),
+                                      stops: [0.1376, 0.5174, 0.8403, 1.5206],
                                       colors: [
                                         Color(0xFF09545E),
                                         Color(0xFF0C7785),
@@ -203,9 +203,7 @@ class MyHome extends StatelessWidget {
                                   ),
                                   child: Center(
                                     child: Transform.rotate(
-                                      angle: 135 *
-                                          (pi /
-                                              108), // Corrected the angle calculation
+                                      angle: 180 * (pi / 103),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
@@ -214,18 +212,14 @@ class MyHome extends StatelessWidget {
                                             children: [
                                               Builder(
                                                 builder: (context) {
-                                                  // Use MediaQuery to get the screen width
                                                   double screenWidth =
                                                       MediaQuery.of(context)
                                                           .size
                                                           .width;
-
-                                                  // Define a base font size and scale it based on screen width
                                                   double baseFontSize = 30;
                                                   double scaledFontSize =
                                                       baseFontSize *
-                                                          (screenWidth /
-                                                              500); // Adjust 375 based on your design's base width
+                                                          (screenWidth / 500);
 
                                                   return Text(
                                                     dashboardData != null &&
@@ -240,7 +234,9 @@ class MyHome extends StatelessWidget {
                                                           FontWeight.w400,
                                                       fontFamily:
                                                           'Ethnocentric',
-                                                      color: Colors.white,
+                                                      color:
+                                                          const Color.fromARGB(
+                                                              255, 0, 0, 0),
                                                     ),
                                                   );
                                                 },
@@ -251,7 +247,8 @@ class MyHome extends StatelessWidget {
                                                   fontFamily: 'Ethnocentric',
                                                   fontWeight: FontWeight.w400,
                                                   fontSize: 14,
-                                                  color: Colors.white,
+                                                  color: Color.fromARGB(
+                                                      255, 0, 0, 0),
                                                 ),
                                               ),
                                             ],
@@ -259,10 +256,12 @@ class MyHome extends StatelessWidget {
                                           const Text(
                                             'Battery',
                                             style: TextStyle(
-                                                fontFamily: 'Raleway',
-                                                fontWeight: FontWeight.w400,
-                                                fontSize: 13,
-                                                color: Colors.white),
+                                              fontFamily: 'Raleway',
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 13,
+                                              color:
+                                                  Color.fromARGB(255, 0, 0, 0),
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -274,6 +273,19 @@ class MyHome extends StatelessWidget {
                           ),
                         ),
                       ),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: AlignmentDirectional(-1.39, 0.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: AnimatedSquareWave(
+                      batteryPercentage: dashboardData != null &&
+                              dashboardData!['data'] != null
+                          ? dashboardData!['data'][0]['battery_percentage']
+                          : 0,
+                      isCharging: isCharging,
                     ),
                   ),
                 ),
@@ -299,36 +311,109 @@ class MyHome extends StatelessWidget {
                     ),
                   ),
                 ),
-                Positioned.fill(
+                Positioned(
+                  top: MediaQuery.of(context).size.height *
+                      0.09, // 10% from the top
+                  left: MediaQuery.of(context).size.width *
+                      0.38, // 5% from the left
                   child: Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(
-                      MediaQuery.of(context).size.width > 600 ? 185 : 185,
-                      0,
-                      0,
-                      0,
-                    ),
+                    padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.asset(
                         'assets/images/image_bike.png',
-                        width: 420,
-                        height: MediaQuery.of(context).size.height,
-                        fit: BoxFit.cover,
+                        width: MediaQuery.of(context).size.width *
+                            0.85, // 80% of screen width
+                        height: MediaQuery.of(context).size.height *
+                            0.9, // 60% of screen height
                       ),
                     ),
                   ),
                 ),
                 Positioned(
-                  top: 70,
-                  left: 35,
-                  right: 0,
+                  top: 68,
+                  left: 0,
+                  right: 260,
                   child: Align(
                     child: ClipRRect(
                       child: Image.asset(
                         'assets/images/briskhome.png',
                         width: 160,
-                        height: 18,
+                        height: 40,
                       ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: MediaQuery.of(context).size.height * 0.08,
+                  left: MediaQuery.of(context).size.width * 0.335,
+                  child: Padding(
+                    padding: EdgeInsets.all(0), // Padding here is optional
+                    child: Text(
+                      'Hi $name', // Display the user's name here
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w400,
+                        fontFamily: 'Goldman',
+                        color: Color.fromARGB(255, 0, 0, 0),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: MediaQuery.of(context).size.height *
+                      0.08, // Dynamic top position
+                  left: MediaQuery.of(context).size.width *
+                      0.81, // Dynamic left position
+                  child: GestureDetector(
+                    onTap: () {
+                      // Navigate to the next page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProfilePage(
+                            sessionId: sessionId,
+                            vehicleId: vehicleId,
+                          ), // Replace with your next page widget
+                        ),
+                      );
+                    },
+                    child: CircleAvatar(
+                      radius: MediaQuery.of(context).size.height *
+                          0.035, // Dynamic radius
+                      child: profilePicture != null
+                          ? ClipOval(
+                              child: profilePicture!.startsWith('http')
+                                  ? Image.network(
+                                      profilePicture!,
+                                      fit: BoxFit
+                                          .cover, // Ensures image covers the CircleAvatar
+                                      width:
+                                          MediaQuery.of(context).size.height *
+                                              0.1, // Dynamic width
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.1, // Dynamic height
+                                    )
+                                  : Image.memory(
+                                      base64Decode(profilePicture!),
+                                      fit: BoxFit
+                                          .cover, // Ensures image covers the CircleAvatar
+                                      width:
+                                          MediaQuery.of(context).size.height *
+                                              0.1, // Dynamic width
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.1, // Dynamic height
+                                    ),
+                            )
+                          : Icon(
+                              Icons.person,
+                              color: Colors
+                                  .black, // Adjust color to fit the design
+                              size: MediaQuery.of(context).size.height *
+                                  0.04, // Dynamic icon size
+                            ),
                     ),
                   ),
                 ),
@@ -693,6 +778,7 @@ class MyHome extends StatelessWidget {
     BuildContext context,
     String sessionId,
     String vehicleId,
+    String name,
     Map<String, dynamic>? responseData,
     Map<String, dynamic>? dashboardData,
   ) {
@@ -824,5 +910,126 @@ class MyHome extends StatelessWidget {
         ),
       ),
     ];
+  }
+}
+
+class AnimatedSquareWave extends StatefulWidget {
+  final double batteryPercentage;
+  final bool isCharging;
+
+  const AnimatedSquareWave({
+    Key? key,
+    required this.batteryPercentage,
+    required this.isCharging,
+  }) : super(key: key);
+
+  @override
+  _AnimatedSquareWaveState createState() => _AnimatedSquareWaveState();
+}
+
+class _AnimatedSquareWaveState extends State<AnimatedSquareWave>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAnimation();
+  }
+
+  void _initializeAnimation() {
+    if (widget.isCharging) {
+      _controller = AnimationController(
+        vsync: this,
+        duration: const Duration(seconds: 2),
+      )..repeat();
+      _animation = Tween<double>(begin: 0, end: 1).animate(_controller);
+    }
+  }
+
+  @override
+  void didUpdateWidget(AnimatedSquareWave oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isCharging != oldWidget.isCharging) {
+      if (widget.isCharging) {
+        _initializeAnimation();
+      } else {
+        _controller.dispose();
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.isCharging) {
+      return SizedBox.shrink();
+    }
+
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.5,
+      height: MediaQuery.of(context).size.width * 0.5,
+      child: AnimatedBuilder(
+        animation: _animation,
+        builder: (context, child) {
+          return CustomPaint(
+            painter: SquareWavePainter(_animation.value),
+            child: const SizedBox.expand(),
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    if (widget.isCharging) {
+      _controller.dispose();
+    }
+    super.dispose();
+  }
+}
+
+class SquareWavePainter extends CustomPainter {
+  final double animationValue;
+
+  SquareWavePainter(this.animationValue);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Color.fromARGB(255, 255, 255, 255).withOpacity(0.15);
+
+    final maxDimension = size.width;
+    final center = Offset(size.width / 2, size.height / 2);
+    final angle = 45 * pi / 180; // 45 degrees in radians
+
+    canvas.save(); // Save the current state of the canvas
+    canvas.translate(
+        center.dx, center.dy); // Move the origin to the center of the canvas
+    canvas.rotate(angle); // Rotate the canvas by 45 degrees
+    canvas.translate(
+        -center.dx, -center.dy); // Move the origin back to the top-left corner
+
+    const squaresCount = 5;
+
+    for (int i = 2; i < squaresCount; i++) {
+      final dimension = maxDimension * animationValue * (1 - i / squaresCount);
+      final offset = (maxDimension - dimension) / 2;
+      final rect = Rect.fromLTWH(offset, offset, dimension, dimension);
+      final radius = 15.0; // Adjust the radius of the corners
+
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(rect, Radius.circular(radius)),
+        paint,
+      );
+    }
+
+    canvas.restore(); // Restore the saved state of the canvas
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
   }
 }

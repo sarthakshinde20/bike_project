@@ -220,7 +220,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Manage Document',
+                  'Upload Document',
                   style: TextStyle(
                     fontSize: 28,
                     fontFamily: 'Goldman',
@@ -244,7 +244,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             },
             child: Padding(
               padding: EdgeInsets.symmetric(
-                vertical: MediaQuery.of(context).size.height * 0.272,
+                vertical: MediaQuery.of(context).size.height * 0.285,
                 horizontal: MediaQuery.of(context).size.width * 0.05,
               ),
               child: Row(

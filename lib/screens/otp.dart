@@ -58,6 +58,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 responseData['vehicles'].isNotEmpty
             ? responseData['vehicles'][0]['vehicle_id'] ?? ''
             : '';
+        final name = responseData['name'] ?? ''; // Extract name
 
         if (sessionId.isNotEmpty && vehicleId.isNotEmpty) {
           await fetchDashboardData(sessionId, vehicleId);
@@ -65,6 +66,8 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('sessionId', sessionId);
           await prefs.setString('vehicleId', vehicleId);
+          await prefs.setString('name', name);
+
           // Ensure you fetch and store dashboardData and responseData correctly
           await prefs.setString('dashboardData', jsonEncode(dashboardData));
           await prefs.setString('responseData', jsonEncode(responseData));
@@ -79,6 +82,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 'vehicleId': vehicleId,
                 'dashboardData': dashboardData,
                 'responseData': responseData,
+                'name': name,
               },
             );
           });

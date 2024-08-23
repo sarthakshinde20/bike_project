@@ -142,7 +142,7 @@ class _UploadPageState extends State<UploadPage> {
 
   Future<void> _uploadImage(String documentName, File? imageFile) async {
     if (imageFile == null) {
-      _showDialog('Error', 'No image selected for $documentName', Icons.error);
+      _showDialog('Error', 'Please Select Image to Upload', Icons.error);
       return;
     }
 
@@ -207,9 +207,7 @@ class _UploadPageState extends State<UploadPage> {
                 fontWeight: FontWeight.w600,
                 fontSize: 14),
           ),
-          actions: <Widget>[
-            // The OK button is removed because the dialog will close automatically
-          ],
+          actions: <Widget>[],
         );
       },
     );
@@ -245,7 +243,7 @@ class _UploadPageState extends State<UploadPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Manage Document',
+                  'Upload Document',
                   style: TextStyle(
                     fontSize: 28,
                     fontFamily: 'Goldman',
@@ -269,7 +267,7 @@ class _UploadPageState extends State<UploadPage> {
             },
             child: Padding(
               padding: EdgeInsets.symmetric(
-                vertical: screenHeight * 0.272,
+                vertical: screenHeight * 0.285,
                 horizontal: screenWidth * 0.05,
               ),
               child: Row(
