@@ -91,7 +91,7 @@ class _FetchPageState extends State<FetchPage> {
       body: Stack(
         children: [
           Align(
-            alignment: AlignmentDirectional(-2, -0.9),
+            alignment: const AlignmentDirectional(-2, -0.9),
             child: ClipRRect(
               child: Image.asset(
                 'assets/images/headline.png',
@@ -116,7 +116,7 @@ class _FetchPageState extends State<FetchPage> {
                     fontSize: 28,
                     fontFamily: 'Goldman',
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                     shadows: [
                       Shadow(
                         offset: Offset(2.0, 3.0),
@@ -146,11 +146,11 @@ class _FetchPageState extends State<FetchPage> {
                     size: screenWidth * 0.05,
                   ),
                   SizedBox(width: screenWidth * 0.02),
-                  Text(
+                  const Text(
                     'Back',
                     style: TextStyle(
                       fontFamily: 'Goldman',
-                      fontSize: screenWidth * 0.045,
+                      fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: Colors.black,
                     ),
@@ -176,9 +176,9 @@ class _FetchPageState extends State<FetchPage> {
                             const Text(
                               'View Document',
                               style: TextStyle(
-                                fontFamily: 'Raleway',
+                                fontFamily: 'Montserrat',
                                 color: Colors.black,
-                                fontSize: 20,
+                                fontSize: 18,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -204,6 +204,15 @@ class _FetchPageState extends State<FetchPage> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
+                                      Text(
+                                        doc['name'],
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontFamily: 'Montserrat',
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8.0),
                                       Container(
                                         width: 100,
                                         height: 100,
@@ -217,12 +226,6 @@ class _FetchPageState extends State<FetchPage> {
                                           doc['data'],
                                           fit: BoxFit.cover,
                                         ),
-                                      ),
-                                      SizedBox(height: 8.0),
-                                      Text(
-                                        doc['name'],
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold),
                                       ),
                                     ],
                                   ),
@@ -253,7 +256,7 @@ class FullScreenImagePage extends StatelessWidget {
         backgroundColor: Colors.black,
         actions: [
           IconButton(
-            icon: Icon(Icons.close),
+            icon: const Icon(Icons.close),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
@@ -263,7 +266,7 @@ class FullScreenImagePage extends StatelessWidget {
           imageData,
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
-            return Center(child: Icon(Icons.error));
+            return const Center(child: Icon(Icons.error));
           },
         ),
       ),

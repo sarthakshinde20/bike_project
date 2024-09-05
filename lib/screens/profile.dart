@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:bike_project/screens/document_page.dart';
 import 'package:bike_project/screens/editprofile.dart';
-import 'package:bike_project/screens/uploaddocument.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -148,14 +147,14 @@ class _ProfilePageState extends State<ProfilePage> {
       print('Upload Response for $documentName: $responseBody');
 
       if (response.statusCode == 200) {
-        _showDialog('Success', 'Upload successful for $documentName',
-            Icons.check_circle);
+        _showDialog(
+            '', 'Profile Photo Uploaded Successfully', Icons.check_circle);
       } else {
-        _showDialog('Error', 'Upload failed for $documentName: $responseBody',
-            Icons.error);
+        _showDialog(
+            '', 'Upload failed for $documentName: $responseBody', Icons.error);
       }
     } catch (e) {
-      _showDialog('Error', 'Error uploading image: $e', Icons.error);
+      _showDialog('', 'Error uploading image: $e', Icons.error);
     }
   }
 
@@ -165,7 +164,6 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(title),
           content: Row(
             children: <Widget>[
               Icon(icon,
@@ -205,25 +203,82 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          child: Stack(
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(20), // Adjust top corners radius
+              bottom: Radius.circular(20), // Adjust bottom corners radius
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Positioned.fill(
-                child: Image.memory(
-                  imageData,
-                  fit: BoxFit.cover,
+              Stack(
+                children: [
+                  Center(
+                    child: Image.memory(
+                      imageData,
+                      fit: BoxFit.contain,
+                      width: MediaQuery.of(context).size.width *
+                          1.5, // 25% of the screen width
+                      height: MediaQuery.of(context).size.width *
+                          1.0, // Maintaining square aspect ratio (100x100 approx)
+                    ),
+                  ),
+                  Positioned(
+                    top: 05,
+                    right: 06,
+                    child: IconButton(
+                      icon: const Icon(Icons.close,
+                          color: Color.fromARGB(255, 0, 0, 0)),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: 250, // Adjust this width as needed
+                child: Ink(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: const Color.fromARGB(255, 9, 84, 94),
+                      width: 2.5,
+                    ),
+                    gradient: const LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        Colors.white,
+                        Colors.white,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(100),
+                    onTap: () {
+                      Navigator.of(context).pop(); // Close the dialog
+                      _pickImage(); // Trigger image picking functionality
+                    },
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      child: const Text(
+                        'Change Profile Photo',
+                        style: TextStyle(
+                          fontFamily: 'Goldman',
+                          color: Colors.black,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              Positioned(
-                top: 10,
-                right: 10,
-                child: IconButton(
-                  icon: Icon(Icons.close,
-                      color: const Color.fromARGB(255, 5, 5, 5)),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ),
+              const SizedBox(height: 16), // Optional spacing below the button
             ],
           ),
         );
@@ -245,7 +300,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: ClipRRect(
                 child: Image.asset(
                   'assets/images/headline.png',
-                  width: screenWidth * 0.9, // 90% of screen width
+                  width: screenWidth * 0.85, // 90% of screen width
                   height: screenHeight * 0.3, // 30% of screen height
                   fit: BoxFit.contain,
                 ),
@@ -253,9 +308,9 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             Padding(
               padding: EdgeInsets.only(
-                top: screenHeight * 0.155, // 15% of screen height
+                top: screenHeight * 0.152, // 15% of screen height
                 bottom: screenHeight * 0.025, // 2.5% of screen height
-                right: screenWidth * 0.35, // 35% of screen width
+                right: screenWidth * 0.28, // 35% of screen width
               ),
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -263,10 +318,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   Text(
                     'Profile',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 34,
                       fontFamily: 'Goldman',
                       color: Color.fromARGB(255, 255, 255, 255),
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                       shadows: [
                         Shadow(
                           offset: Offset(2.0, 3.0),
@@ -361,11 +416,11 @@ class _ProfilePageState extends State<ProfilePage> {
                         child: GestureDetector(
                           onTap: _pickImage,
                           child: const CircleAvatar(
-                            backgroundColor: Colors.blue,
+                            backgroundColor: Color.fromARGB(255, 44, 44, 44),
                             radius: 12,
                             child: Icon(
                               Icons.edit,
-                              size: 12,
+                              size: 14,
                               color: Colors.white,
                             ),
                           ),
@@ -380,17 +435,16 @@ class _ProfilePageState extends State<ProfilePage> {
               top: MediaQuery.of(context).size.height *
                   0.38, // Adjust based on screen height
               left: MediaQuery.of(context).size.width *
-                  0.1, // Adjust based on screen width
+                  0.07, // Adjust based on screen width
               right: MediaQuery.of(context).size.width *
                   0.1, // Adjust right padding if needed
               child: Text(
                 _phoneNumber ??
                     'Loading...', // Show loading text if phone number is not yet fetched
                 style: TextStyle(
-                  fontSize: MediaQuery.of(context).size.width *
-                      0.05, // Adjust font size based on screen width
+                  fontSize: 16, // Adjust font size based on screen width
                   fontWeight: FontWeight.w400,
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Montserrat',
                 ),
                 textAlign:
                     TextAlign.center, // Optional: center the text horizontally
@@ -404,9 +458,9 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Text(
                 _userName ?? 'No Data Found...', // Display the user's name
                 style: TextStyle(
-                  fontSize: MediaQuery.of(context).size.width * 0.05,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Poppins',
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Montserrat',
                 ),
                 textAlign: TextAlign.start,
               ),
@@ -438,8 +492,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       Text(
                         'Upload Document',
                         style: TextStyle(
-                          fontFamily: 'Raleway',
-                          fontSize: 20,
+                          fontFamily: 'Montserrat',
+                          fontSize: 16,
                           letterSpacing: 0,
                           fontWeight: FontWeight.w600,
                         ),
@@ -447,7 +501,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       Icon(
                         Icons.arrow_forward_ios,
                         color: Color.fromARGB(255, 32, 32, 32),
-                        size: 20,
+                        size: 16,
                       ),
                     ],
                   ),
@@ -481,8 +535,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       Text(
                         'View Document',
                         style: TextStyle(
-                          fontFamily: 'Raleway',
-                          fontSize: 20,
+                          fontFamily: 'Montserrat',
+                          fontSize: 16,
                           letterSpacing: 0,
                           fontWeight: FontWeight.w600,
                         ),
@@ -490,7 +544,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       Icon(
                         Icons.arrow_forward_ios,
                         color: Color.fromARGB(255, 32, 32, 32),
-                        size: 20,
+                        size: 16,
                       ),
                     ],
                   ),
@@ -516,7 +570,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 height: 60.0,
                                 fit: BoxFit.cover,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 3),
                               const Flexible(
                                 child: Text(
                                   'Are you sure you want to logout?',
@@ -563,7 +617,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
-                                    color: Colors.green, // Border color
+                                    color: Color.fromARGB(
+                                        255, 9, 84, 94), // Border color
                                     width: 2.0, // Border width
                                   ),
                                 ),
@@ -602,9 +657,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   'Logout',
                   style: Theme.of(context).textTheme.bodyLarge!.merge(
                         const TextStyle(
-                          fontFamily: 'Raleway',
+                          fontFamily: 'Montserrat',
                           color: Color(0xFFFF693B),
-                          fontSize: 19,
+                          fontSize: 18,
                           letterSpacing: 0,
                           fontWeight: FontWeight.w600,
                         ),

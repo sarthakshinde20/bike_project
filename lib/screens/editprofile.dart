@@ -248,7 +248,7 @@ class _UploadPageState extends State<UploadPage> {
                     fontSize: 28,
                     fontFamily: 'Goldman',
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                     shadows: [
                       Shadow(
                         offset: Offset(2.0, 3.0),
@@ -257,6 +257,7 @@ class _UploadPageState extends State<UploadPage> {
                       ),
                     ],
                   ),
+                  textAlign: TextAlign.center,
                 ),
               ],
             ),
@@ -278,11 +279,11 @@ class _UploadPageState extends State<UploadPage> {
                     size: screenWidth * 0.05,
                   ),
                   SizedBox(width: screenWidth * 0.02),
-                  Text(
+                  const Text(
                     'Back',
                     style: TextStyle(
                       fontFamily: 'Goldman',
-                      fontSize: screenWidth * 0.045,
+                      fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: Colors.black,
                     ),
@@ -294,8 +295,8 @@ class _UploadPageState extends State<UploadPage> {
           Positioned(
             top: screenHeight * 0.32,
             left: screenWidth * 0.05,
-            right: screenWidth * 0.05,
-            bottom: 0,
+            right: screenWidth * 0.0,
+            bottom: screenWidth * 0.05,
             child: SingleChildScrollView(
               padding: const EdgeInsets.only(top: 10),
               child: Column(
@@ -304,10 +305,10 @@ class _UploadPageState extends State<UploadPage> {
                   const Text(
                     'Manage Document',
                     style: TextStyle(
-                      fontFamily: 'Raleway',
+                      fontFamily: 'Montserrat',
                       color: Colors.black,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -388,48 +389,60 @@ class _UploadPageState extends State<UploadPage> {
         Text(
           title,
           style: const TextStyle(
-              fontSize: 16, fontFamily: 'Raleway', fontWeight: FontWeight.bold),
+            fontSize: 16,
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w400,
+          ),
         ),
         const SizedBox(height: 8),
-        GestureDetector(
-          onTap: onPickImage,
-          child: Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              border: Border.all(
-                  color: const Color.fromARGB(255, 43, 214, 28), width: 5),
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-            child: imageFile != null
-                ? Image.file(imageFile, fit: BoxFit.cover)
-                : const Center(
-                    child: Icon(
-                      Icons.add,
-                      size: 40.0,
-                      color: Color.fromARGB(255, 43, 214, 28),
+        Row(
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width *
+                  0.26, // Adjust based on screen width
+              height: MediaQuery.of(context).size.width *
+                  0.28, // Maintain square shape
+              child: GestureDetector(
+                onTap: onPickImage,
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: const Color.fromARGB(255, 43, 214, 28),
+                      width: 4,
                     ),
+                    borderRadius: BorderRadius.circular(12.0),
                   ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        ElevatedButton(
-          onPressed: onUploadImage,
-          style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(1000),
-              side: const BorderSide(color: Colors.black, width: 2.0),
+                  child: imageFile != null
+                      ? Image.file(imageFile, fit: BoxFit.cover)
+                      : const Center(
+                          child: Icon(
+                            Icons.add,
+                            size: 40.0,
+                            color: Color.fromARGB(255, 43, 214, 28),
+                          ),
+                        ),
+                ),
+              ),
             ),
-          ),
-          child: const Text(
-            'Upload',
-            style: TextStyle(
-              fontFamily: 'Goldman',
-              color: Color.fromARGB(255, 9, 84, 94),
-              fontSize: 20,
-              fontWeight: FontWeight.w500,
+            // Add spacing between image and button
+            SizedBox(
+              height: MediaQuery.of(context).size.width *
+                  0.1, // Match the image height
+              child: ElevatedButton(
+                onPressed: onUploadImage,
+                style: ElevatedButton.styleFrom(
+                  shape: const CircleBorder(
+                    side: BorderSide(color: Colors.black, width: 2.0),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.upload,
+                  color: Color.fromARGB(255, 9, 84, 94),
+                  size: 20,
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ],
     );

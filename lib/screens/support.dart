@@ -27,7 +27,7 @@ class _SupportPageState extends State<SupportPage> {
             child: ClipRRect(
               child: Image.asset(
                 'assets/images/headline.png',
-                width: screenWidth * 0.9, // 90% of screen width
+                width: screenWidth * 0.85, // 90% of screen width
                 height: screenHeight * 0.3, // 30% of screen height
                 fit: BoxFit.contain,
               ),
@@ -45,10 +45,10 @@ class _SupportPageState extends State<SupportPage> {
                 Text(
                   'Support',
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 34,
                     fontFamily: 'Goldman',
                     color: Color.fromARGB(255, 255, 255, 255),
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                     shadows: [
                       Shadow(
                         offset: Offset(2.0, 3.0),
@@ -62,7 +62,7 @@ class _SupportPageState extends State<SupportPage> {
             ),
           ),
           Align(
-            alignment: const AlignmentDirectional(0, 0.9),
+            alignment: const AlignmentDirectional(0, 0.95),
             child: GestureDetector(
               onTap: () {
                 int count = 0;
@@ -90,7 +90,7 @@ class _SupportPageState extends State<SupportPage> {
                       '',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontFamily: 'Raleway',
+                        fontFamily: 'Montserrat',
                         fontSize: 34,
                         letterSpacing: 0,
                         fontWeight: FontWeight.w600,
@@ -100,8 +100,8 @@ class _SupportPageState extends State<SupportPage> {
                       'Hello, How can we help you ?',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontFamily: 'Raleway',
-                        fontSize: 20,
+                        fontFamily: 'Montserrat',
+                        fontSize: 18,
                         letterSpacing: 0,
                         fontWeight: FontWeight.w600,
                       ),
@@ -212,11 +212,11 @@ class _SupportPageState extends State<SupportPage> {
                     child: const Text(
                       'Submit Issue',
                       style: TextStyle(
-                        fontFamily: 'Raleway',
+                        fontFamily: 'Goldman',
                         color: Color.fromARGB(
                             255, 0, 0, 0), // Text color of the button
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ),
@@ -312,15 +312,15 @@ class _SupportPageState extends State<SupportPage> {
                       children: [
                         Icon(Icons.phone,
                             color: Color.fromARGB(255, 1, 1, 1)), // Phone icon
-                        SizedBox(width: 8), // Space between icon and text
+                        SizedBox(width: 30), // Space between icon and text
                         Text(
                           'Customer Care',
                           style: TextStyle(
-                            fontFamily: 'Raleway',
+                            fontFamily: 'Goldman',
                             color: Color.fromARGB(
                                 255, 0, 0, 0), // Text color of the button
-                            fontSize: 20,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ],

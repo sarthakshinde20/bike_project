@@ -89,7 +89,11 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
                     deviceWidth * 0.0), // Add spacing between image and text
             Text(
               label,
-              style: const TextStyle(color: Colors.black),
+              style: const TextStyle(
+                  color: Colors.black,
+                  fontFamily: 'Raleway',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -106,13 +110,13 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
       body: Stack(
         children: [
           isLoading
-              ? Center(child: CircularProgressIndicator())
+              ? const Center(child: CircularProgressIndicator())
               : vehicleLocation != null
                   ? VehicleMap(
                       latitude: vehicleLocation!['latitude'],
                       longitude: vehicleLocation!['longitude'],
                     )
-                  : Center(child: Text('Location not found')),
+                  : const Center(child: Text('Location not found')),
           Positioned(
             top: screenHeight * 0.08,
             left: screenWidth * 0.07,
@@ -128,11 +132,11 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
                     size: screenWidth * 0.05,
                   ),
                   SizedBox(width: screenWidth * 0.01),
-                  Text(
+                  const Text(
                     'Back',
                     style: TextStyle(
                       fontFamily: 'Goldman',
-                      fontSize: screenWidth * 0.045,
+                      fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: Colors.black,
                     ),
@@ -208,8 +212,11 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
                                       child: const Text(
                                         "Cancel",
                                         style: TextStyle(
-                                          color: Color.fromARGB(255, 9, 84, 94),
-                                        ),
+                                            color:
+                                                Color.fromARGB(255, 9, 84, 94),
+                                            fontFamily: 'Raleway',
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 16),
                                       ),
                                     ),
                                   ),
@@ -255,7 +262,7 @@ class VehicleMap extends StatelessWidget {
       ),
       markers: {
         Marker(
-          markerId: MarkerId('vehicleLocation'),
+          markerId: const MarkerId('vehicleLocation'),
           position: vehicleLocation,
         ),
       },

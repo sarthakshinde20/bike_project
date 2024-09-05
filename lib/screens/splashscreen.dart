@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login.dart'; // Import your login page
 import 'dart:convert';
@@ -90,15 +91,14 @@ class _AnimatedVideoDemoState extends State<AnimatedVideoDemo>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: const Color(0xFF000000), // Set the background color to black
+        color: const Color(0xFF000000),
         child: Center(
           child: _videoController.value.isInitialized
               ? AspectRatio(
-                  aspectRatio: _videoController
-                      .value.aspectRatio, // Maintain video aspect ratio
+                  aspectRatio: _videoController.value.aspectRatio,
                   child: VideoPlayer(_videoController),
                 )
-              : const CircularProgressIndicator(), // Display a loading indicator while the video initializes
+              : const CircularProgressIndicator(),
         ),
       ),
     );

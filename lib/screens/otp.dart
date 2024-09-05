@@ -1,3 +1,4 @@
+import 'package:bike_project/screens/home.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -5,6 +6,7 @@ import 'dart:io';
 
 import 'package:pinput/pinput.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sms_autofill/sms_autofill.dart';
 
 class OtpVerificationPage extends StatefulWidget {
   const OtpVerificationPage({super.key});
@@ -31,9 +33,74 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         });
       }
     });
+    listenForOtp(); // Start listening for the OTP
+  }
+
+  @override
+  void codeUpdated(String code) {
+    setState(() {
+      _otpController.text = code; // Automatically set the OTP in the controller
+    });
+  }
+
+  Future<void> listenForOtp() async {
+    await SmsAutoFill().listenForCode();
+  }
+
+  @override
+  void dispose() {
+    SmsAutoFill().unregisterListener(); // Stop listening for OTP
+    super.dispose();
+  }
+
+  Future<void> resendOtp(String mobileNumber) async {
+    if (isLoading) return; // Prevent multiple submissions
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse(
+            'http://34.93.202.185:5000/api/v1/mobile_otp_login'), // Use your correct API endpoint
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(<String, String>{
+          'mobile_number': mobileNumber,
+        }),
+      );
+      print('HTTP Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}'); // Debugging statement
+
+      if (response.statusCode == 200) {
+        setState(() {
+          isLoading = false;
+          _otpController.clear();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('OTP has been resent successfully')),
+        );
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to resend OTP')),
+        );
+      }
+    } catch (error) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('An error occurred while resending OTP')),
+      );
+    }
   }
 
   Future<void> _verifyOtp(String mobileNumber) async {
+    if (isLoading) return;
     setState(() {
       isLoading = true;
     });
@@ -58,7 +125,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 responseData['vehicles'].isNotEmpty
             ? responseData['vehicles'][0]['vehicle_id'] ?? ''
             : '';
-        final name = responseData['name'] ?? ''; // Extract name
+        final name = responseData['name'] ?? '';
 
         if (sessionId.isNotEmpty && vehicleId.isNotEmpty) {
           await fetchDashboardData(sessionId, vehicleId);
@@ -74,16 +141,17 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
           _showAlertDialog(
               'Verified Successfully', 'assets/images/otpvalid.png', () {
-            Navigator.pushReplacementNamed(
+            Navigator.pushReplacement(
               context,
-              'MyHome',
-              arguments: {
-                'sessionId': sessionId,
-                'vehicleId': vehicleId,
-                'dashboardData': dashboardData,
-                'responseData': responseData,
-                'name': name,
-              },
+              MaterialPageRoute(
+                builder: (context) => MyHome(
+                  sessionId: sessionId,
+                  vehicleId: vehicleId,
+                  dashboardData: dashboardData,
+                  responseData: responseData,
+                  name: name,
+                ),
+              ),
             );
           });
         } else {
@@ -113,6 +181,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       [VoidCallback? onOk]) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           content: Row(
@@ -120,8 +189,8 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             children: <Widget>[
               Image.asset(
                 imagePath,
-                height: 50.0,
-                width: 50.0,
+                height: 90.0,
+                width: 90.0,
               ),
               const SizedBox(height: 20), // Use width for horizontal spacing
               Expanded(
@@ -130,7 +199,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 16,
-                    fontFamily: 'Raleway',
+                    fontFamily: 'Montserrat',
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -143,7 +212,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       },
     );
 
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 3), () {
       Navigator.of(context).pop();
       if (onOk != null) {
         onOk();
@@ -157,7 +226,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         Uri.parse(
             'http://34.93.202.185:5000/api/v1/get_vehicle_dashboard?vehicle_id=$vehicleId&session=$sessionId'),
       );
-
+      print('Response Body: ${response.body}'); // Debugging statement
       if (response.statusCode == 200) {
         setState(() {
           dashboardData = json.decode(response.body);
@@ -200,14 +269,13 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             child: ClipRRect(
               child: Image.asset(
                 'assets/images/headline.png',
-                width: screenWidth * 0.9,
+                width: screenWidth * 0.85,
                 height: screenHeight * 0.3,
-                fit: BoxFit.contain,
               ),
             ),
           ),
           Positioned(
-            top: screenHeight * 0.15,
+            top: screenHeight * 0.14,
             right: screenWidth * 0.45,
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -215,10 +283,10 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 Text(
                   'Verify',
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 34,
                     fontFamily: 'Goldman',
                     color: Color.fromARGB(255, 255, 255, 255),
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                     shadows: [
                       Shadow(
                         offset: Offset(2.0, 3.0),
@@ -246,11 +314,11 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                     size: screenWidth * 0.05,
                   ),
                   SizedBox(width: screenWidth * 0.01),
-                  Text(
+                  const Text(
                     'Back',
                     style: TextStyle(
                       fontFamily: 'Goldman',
-                      fontSize: screenWidth * 0.045, // Adjust text size
+                      fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: Colors.black,
                     ),
@@ -260,23 +328,23 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             ),
           ),
           Positioned(
-            top: screenHeight * 0.32, // Adjust as needed
-            left: screenWidth * 0.045, // Adjust as needed
-            right: screenWidth * 0.045, // Adjust as needed
+            top: screenHeight * 0.34, // Adjust as needed
+            left: screenWidth * 0.09, // Adjust as needed
+            right: screenWidth * 0.06, // Adjust as needed
             child: const Text(
               'Verify Your Registration',
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.start,
               style: TextStyle(
-                fontFamily: 'Raleway',
+                fontFamily: 'Montserrat',
                 fontSize: 30,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
           Positioned(
-            left: 10.0, // Adjust as needed
-            right: 10.0, // Adjust as needed
-            top: screenHeight * 0.38, // Adjust as needed
+            left: 0.0, // Adjust as needed
+            right: 0.0, // Adjust as needed
+            top: screenHeight * 0.43, // Adjust as needed
             child: Padding(
               padding: const EdgeInsets.all(24.0),
               child: RichText(
@@ -284,9 +352,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                   children: [
                     const TextSpan(
                       text:
-                          'We have sent a One Time Password to your mobile number ',
+                          'We have sent an One Time Password to your mobile number ',
                       style: TextStyle(
-                        fontFamily: 'Raleway',
+                        fontFamily: 'Montserrat',
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                         color: Colors.black,
@@ -297,7 +365,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                       style: const TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                         color: Colors.black,
                         fontStyle: FontStyle
                             .italic, // Optional: Italicize the number for emphasis
@@ -311,7 +379,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           Positioned(
             left: 16.0,
             right: 16.0,
-            top: screenHeight * 0.47, // Adjust as needed
+            top: screenHeight * 0.525, // Adjust as needed
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Pinput(
@@ -357,31 +425,35 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                     color: Colors.white,
                   ),
                 ),
-                onCompleted: (value) {
-                  print("Completed: $value");
-                },
-                onChanged: (value) {
-                  print("Current Value: $value");
+                onCompleted: (pin) async {
+                  final mobileNumber =
+                      ModalRoute.of(context)?.settings.arguments as String?;
+                  if (mobileNumber != null) {
+                    await _verifyOtp(mobileNumber);
+                  }
                 },
               ),
             ),
           ),
           Positioned(
-            top: screenHeight *
-                0.58, // Adjust the position from the bottom as needed
-            left: screenWidth * 0.1, // Center horizontally or adjust as needed
-            right: screenWidth * 0.1, // Center horizontally or adjust as needed
+            top: screenHeight * 0.65,
+            left: screenWidth * 0.1,
+            right: screenWidth * 0.22,
             child: Center(
               child: GestureDetector(
                 onTap: () {
-                  Navigator.of(context).pop();
+                  final mobileNumber =
+                      ModalRoute.of(context)?.settings.arguments as String?;
+                  if (mobileNumber != null) {
+                    resendOtp(mobileNumber);
+                  }
                 },
                 child: RichText(
-                  textAlign: TextAlign.center,
+                  textAlign: TextAlign.start,
                   text: const TextSpan(
                     children: [
                       TextSpan(
-                        text: "Didn't receive the OTP? ",
+                        text: "Didn’t received the OTP? ",
                         style: TextStyle(
                           fontSize: 16,
                           fontFamily: 'Raleway',
@@ -427,7 +499,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                       ),
                 ),
                 child: const Text(
-                  'Verify OTP',
+                  'Verify',
                   style: TextStyle(
                       fontFamily: 'Goldman',
                       fontSize: 22,

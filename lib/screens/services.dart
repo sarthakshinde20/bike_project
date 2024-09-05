@@ -38,7 +38,7 @@ class _servicesPageState extends State<servicesPage> {
           child: ClipRRect(
             child: Image.asset(
               'assets/images/headline.png',
-              width: screenWidth * 0.9, // 90% of screen width
+              width: screenWidth * 0.85, // 90% of screen width
               height: screenHeight * 0.3, // 30% of screen height
               fit: BoxFit.contain,
             ),
@@ -56,10 +56,10 @@ class _servicesPageState extends State<servicesPage> {
               Text(
                 'Services',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 34,
                   fontFamily: 'Goldman',
                   color: Color.fromARGB(255, 255, 255, 255),
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
                   shadows: [
                     Shadow(
                       offset: Offset(2.0, 3.0),
@@ -73,7 +73,7 @@ class _servicesPageState extends State<servicesPage> {
           ),
         ),
         Align(
-          alignment: const AlignmentDirectional(0, 0.95),
+          alignment: const AlignmentDirectional(0, 0.9),
           child: GestureDetector(
             onTap: () {
               Future.delayed(Duration(milliseconds: 0), () {

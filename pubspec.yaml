@@ -58,6 +58,7 @@ dependencies:
   flutter_dotenv: ^5.1.0
   flutter_typeahead: ^4.0.0
   video_player: ^2.5.1
+  flutter_blue_plus: ^1.32.12
 
 
 
@@ -127,6 +128,10 @@ flutter:
     - family: Prompt
       fonts:
         - asset: fonts/Prompt-Regular.ttf       
+
+    - family: Montserrat
+      fonts:
+        - asset: fonts/Montserrat-Regular.ttf 
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

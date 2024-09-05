@@ -58,7 +58,7 @@ class BikeDetailsPage extends StatelessWidget {
             child: ClipRRect(
               child: Image.asset(
                 'assets/images/headline.png',
-                width: screenWidth * 0.9,
+                width: screenWidth * 0.85,
                 height: screenHeight * 0.3,
                 fit: BoxFit.contain,
               ),
@@ -68,7 +68,7 @@ class BikeDetailsPage extends StatelessWidget {
             padding: EdgeInsets.only(
               top: screenHeight * 0.155,
               bottom: screenHeight * 0.025,
-              right: screenWidth * 0.18,
+              right: screenWidth * 0.22,
             ),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -76,10 +76,10 @@ class BikeDetailsPage extends StatelessWidget {
                 Text(
                   'Bike Details',
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 34,
                     fontFamily: 'Goldman',
                     color: Color.fromARGB(255, 255, 255, 255),
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                     shadows: [
                       Shadow(
                         offset: Offset(2.0, 3.0),
@@ -122,7 +122,7 @@ class BikeDetailsPage extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.w700,
-                fontFamily: 'Raleway',
+                fontFamily: 'Montserrat',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
@@ -133,32 +133,32 @@ class BikeDetailsPage extends StatelessWidget {
               'Model Name',
               style: TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.w500,
-                fontFamily: 'Raleway',
+                fontWeight: FontWeight.w400,
+                fontFamily: 'Montserrat',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
           ),
           Align(
-            alignment: const AlignmentDirectional(-0.68, -0.05),
+            alignment: const AlignmentDirectional(-0.72, -0.05),
             child: Text(
               vehicleColorDashboardData,
               style: const TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.w700,
-                fontFamily: 'Raleway',
+                fontFamily: 'Montserrat',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
           ),
           const Align(
-            alignment: AlignmentDirectional(-0.7, 0.05),
+            alignment: AlignmentDirectional(-0.72, 0.05),
             child: Text(
               'Color',
               style: TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.w500,
-                fontFamily: 'Raleway',
+                fontWeight: FontWeight.w400,
+                fontFamily: 'Montserrat',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
@@ -170,7 +170,7 @@ class BikeDetailsPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'Raleway',
+                fontFamily: 'Montserrat',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
@@ -182,7 +182,7 @@ class BikeDetailsPage extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'Poppins',
+                fontFamily: 'Montserrat',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
@@ -194,7 +194,7 @@ class BikeDetailsPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'Raleway',
+                fontFamily: 'Montserrat',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
@@ -206,7 +206,7 @@ class BikeDetailsPage extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'Poppins',
+                fontFamily: 'Montserrat',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
@@ -218,7 +218,7 @@ class BikeDetailsPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'Raleway',
+                fontFamily: 'Montserrat',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
@@ -230,7 +230,7 @@ class BikeDetailsPage extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'Poppins',
+                fontFamily: 'Montserrat',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),

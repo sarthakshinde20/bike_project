@@ -35,7 +35,7 @@ class _NotificationPageState extends State<NotificationPage> {
           child: ClipRRect(
             child: Image.asset(
               'assets/images/headline.png',
-              width: screenWidth * 0.9, // 90% of screen width
+              width: screenWidth * 0.85, // 90% of screen width
               height: screenHeight * 0.3, // 30% of screen height
               fit: BoxFit.contain,
             ),
@@ -43,9 +43,9 @@ class _NotificationPageState extends State<NotificationPage> {
         ),
         Padding(
           padding: EdgeInsets.only(
-            top: screenHeight * 0.155, // 15% of screen height
-            bottom: screenHeight * 0.025, // 2.5% of screen height
-            right: screenWidth * 0.18, // 35% of screen width
+            top: screenHeight * 0.165, // 15% of screen height
+            bottom: screenHeight * 0.020, // 2.5% of screen height
+            right: screenWidth * 0.25, // 35% of screen width
           ),
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -53,10 +53,10 @@ class _NotificationPageState extends State<NotificationPage> {
               Text(
                 'Notification',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 26,
                   fontFamily: 'Goldman',
                   color: Color.fromARGB(255, 255, 255, 255),
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
                   shadows: [
                     Shadow(
                       offset: Offset(2.0, 3.0),

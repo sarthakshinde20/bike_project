@@ -2,6 +2,8 @@
         package="com.example.bike_project">
         <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
+
+
     <application
         android:label="bike_project"
         android:name="${applicationName}"

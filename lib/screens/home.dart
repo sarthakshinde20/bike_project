@@ -1,21 +1,61 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 import 'package:app_settings/app_settings.dart';
-import 'package:bike_project/screens/trackmybike.dart';
-import 'package:bike_project/screens/bike_detail.dart';
 import 'package:bike_project/screens/location.dart';
 import 'package:bike_project/screens/notification.dart';
+import 'package:bike_project/screens/bike_detail.dart';
 import 'package:bike_project/screens/profile.dart';
 import 'package:bike_project/screens/services.dart';
 import 'package:bike_project/screens/support.dart';
-import 'package:bike_project/screens/tire_health.dart';
+import 'package:bike_project/screens/trackmybike.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'dart:math';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/services.dart';
-import 'package:geolocator/geolocator.dart';
 
-class MyHome extends StatelessWidget {
+class MyHome extends StatefulWidget {
+  final String sessionId;
+  final String vehicleId;
+  final String name;
+  final Map<String, dynamic>? dashboardData;
+  final Map<String, dynamic>? responseData;
+
+  const MyHome({
+    super.key,
+    required this.sessionId,
+    required this.vehicleId,
+    required this.name,
+    this.dashboardData,
+    this.responseData,
+  });
+
+  @override
+  _MyHomeState createState() => _MyHomeState();
+}
+
+class _MyHomeState extends State<MyHome> {
+  bool isLoading = true;
+  late Timer _timer;
+  late FlutterBluePlus flutterBlue;
+  bool isBluetoothConnected = false;
+  Map<String, dynamic>? screenData;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchScreenData(widget.sessionId, widget.vehicleId);
+
+    // Set up a timer to refresh the data every 5 seconds
+    _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      fetchScreenData(widget.sessionId, widget.vehicleId);
+    });
+  }
+
   String getGreeting() {
     final hour = DateTime.now().hour;
     if (hour >= 4 && hour < 12) {
@@ -29,32 +69,86 @@ class MyHome extends StatelessWidget {
     }
   }
 
+  void checkBluetoothConnection() async {
+    // Get the list of connected devices asynchronously
+    List<BluetoothDevice> devices = await FlutterBluePlus.connectedDevices;
+
+    setState(() {
+      // Update the Bluetooth connection status based on connected devices
+      isBluetoothConnected = devices.isNotEmpty;
+    });
+
+    // Listen for scan results and handle them
+    FlutterBluePlus.scanResults.listen((scanResults) {
+      setState(() {
+        // Update the Bluetooth connection status based on scan results
+        isBluetoothConnected = scanResults.isNotEmpty;
+      });
+    });
+  }
+
+  Future<void> fetchScreenData(String sessionId, String vehicleId) async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+            'http://34.93.202.185:5000/api/v1/get_vehicle_dashboard?vehicle_id=$vehicleId&session=$sessionId'),
+      );
+      print('Response Body: ${response.body}'); // Debugging statement
+      if (response.statusCode == 200) {
+        setState(() {
+          screenData = json.decode(response.body);
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to load dashboard data')),
+        );
+      }
+    } on SocketException {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No Internet connection')),
+      );
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel(); // Cancel the timer when the page is disposed
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Get the arguments from the route
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    final Map<String, dynamic> args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    final String sessionId = args['sessionId'] as String? ?? 'No session ID';
-    final String vehicleId = args['vehicleId'] as String? ?? 'No vehicle ID';
-    final String name = args['name'] as String? ?? 'No Name';
+    // Get the arguments from the route
+    final bool isCharging = screenData != null &&
+        screenData?['data'] != null &&
+        screenData?['data'][0]['battery_charge_status'] == 'charging';
 
-    final Map<String, dynamic>? dashboardData =
-        args['dashboardData'] as Map<String, dynamic>?;
-    final Map<String, dynamic>? responseData =
-        args['responseData'] as Map<String, dynamic>?;
+    // Extract and decode the profile photo
+    Uint8List? profileImage;
+    if (screenData != null &&
+        screenData!['data'] != null &&
+        screenData!['data'][0]['profile_picture'] != null &&
+        screenData!['data'][0]['profile_picture']['data'] != null) {
+      String base64Image = screenData!['data'][0]['profile_picture']['data'];
+      profileImage = base64Decode(base64Image);
+    }
 
-    final bool isCharging = dashboardData != null &&
-        dashboardData['data'] != null &&
-        dashboardData['data'][0]['battery_charge_status'] == 'not_charging';
-    print('Battery Charging Status: $isCharging');
-
-    final String? profilePicture =
-        dashboardData != null && dashboardData['profile_picture'] != null
-            ? dashboardData['profile_picture']
-            : null;
-    print('Profile Picture: $profilePicture');
     return WillPopScope(
       onWillPop: () async {
         SystemNavigator.pop();
@@ -72,31 +166,44 @@ class MyHome extends StatelessWidget {
                     child: ClipRRect(
                       child: Image.asset(
                         'assets/images/headline.png',
-                        width: screenWidth * 0.82, // 90% of screen width
-                        height: screenHeight * 0.3, // 30% of screen height
+                        width: screenWidth * 0.75,
+                        height: screenHeight * 0.3,
                         fit: BoxFit.contain,
                       ),
                     ),
                   ),
                   Padding(
                     padding: EdgeInsets.only(
-                      top: screenHeight * 0.125, // 15% of screen height
-                      bottom: screenHeight * 0.025, // 2.5% of screen height
-                      right: screenWidth * 0.15, // 35% of screen width
+                      top: screenHeight * 0.12,
+                      bottom: screenHeight * 0.025,
+                      right: screenWidth * 0.13,
                     ),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        // Padding(
+                        //   padding: EdgeInsets.only(
+                        //     right: screenWidth * 0.0, // 0% of screen width
+                        //   ), // Adjust the padding as needed
+                        //   child: IconButton(
+                        //     icon: const Icon(
+                        //       Icons.arrow_back_ios,
+                        //       color: Color.fromARGB(255, 255, 255, 255),
+                        //       size: 24,
+                        //     ),
+                        //     onPressed: () => Navigator.of(context).pop(),
+                        //   ),
+                        // ),
                         Text(
                           'Menu',
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: 34,
                             fontFamily: 'Goldman',
                             color: Color.fromARGB(255, 255, 255, 255),
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w700,
                             shadows: [
                               Shadow(
-                                offset: Offset(2.0, 3.0),
+                                offset: Offset(3.0, 4.0),
                                 blurRadius: 3.0,
                                 color: Color.fromARGB(119, 0, 0, 0),
                               ),
@@ -106,17 +213,15 @@ class MyHome extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Padding(
-                      padding:
-                          EdgeInsets.only(top: 110.0, bottom: 115, left: 80.0),
-                    ),
-                  ),
                 ],
               ),
-              ..._buildListTiles(context, sessionId, vehicleId, name,
-                  dashboardData, responseData),
+              ..._buildListTiles(
+                context,
+                widget.sessionId,
+                widget.vehicleId,
+                widget.dashboardData,
+                widget.responseData,
+              ),
             ],
           ),
         ),
@@ -186,16 +291,16 @@ class MyHome extends StatelessWidget {
                                   height: size * 0.56,
                                   decoration: BoxDecoration(
                                     gradient: const LinearGradient(
-                                      begin: Alignment.bottomLeft,
+                                      begin: Alignment.centerLeft,
                                       end: Alignment.centerRight,
                                       transform:
-                                          GradientRotation(-90.3 * (pi / 180)),
-                                      stops: [0.1376, 0.5174, 0.8403, 1.5206],
+                                          GradientRotation(-135 * (pi / 180)),
+                                      stops: [0.1376, 0.5174, 0.8403, 1.1206],
                                       colors: [
                                         Color(0xFF09545E),
                                         Color(0xFF0C7785),
-                                        Color.fromRGBO(9, 84, 94, 0.517708),
-                                        Colors.transparent,
+                                        Color(0x8409545E),
+                                        Color(0x8409545E),
                                       ],
                                     ),
                                     borderRadius:
@@ -216,17 +321,17 @@ class MyHome extends StatelessWidget {
                                                       MediaQuery.of(context)
                                                           .size
                                                           .width;
-                                                  double baseFontSize = 30;
+                                                  double baseFontSize = 29;
                                                   double scaledFontSize =
                                                       baseFontSize *
                                                           (screenWidth / 500);
 
                                                   return Text(
-                                                    dashboardData != null &&
-                                                            dashboardData![
+                                                    screenData != null &&
+                                                            screenData![
                                                                     'data'] !=
                                                                 null
-                                                        ? '${dashboardData!['data'][0]['battery_percentage']}'
+                                                        ? '${screenData!['data'][0]['battery_percentage']}'
                                                         : 'N/A',
                                                     style: TextStyle(
                                                       fontSize: scaledFontSize,
@@ -236,7 +341,10 @@ class MyHome extends StatelessWidget {
                                                           'Ethnocentric',
                                                       color:
                                                           const Color.fromARGB(
-                                                              255, 0, 0, 0),
+                                                              255,
+                                                              255,
+                                                              255,
+                                                              255),
                                                     ),
                                                   );
                                                 },
@@ -248,7 +356,7 @@ class MyHome extends StatelessWidget {
                                                   fontWeight: FontWeight.w400,
                                                   fontSize: 14,
                                                   color: Color.fromARGB(
-                                                      255, 0, 0, 0),
+                                                      255, 255, 255, 255),
                                                 ),
                                               ),
                                             ],
@@ -256,11 +364,11 @@ class MyHome extends StatelessWidget {
                                           const Text(
                                             'Battery',
                                             style: TextStyle(
-                                              fontFamily: 'Raleway',
+                                              fontFamily: 'Prompt',
                                               fontWeight: FontWeight.w400,
                                               fontSize: 13,
-                                              color:
-                                                  Color.fromARGB(255, 0, 0, 0),
+                                              color: Color.fromARGB(
+                                                  255, 255, 255, 255),
                                             ),
                                           ),
                                         ],
@@ -277,14 +385,14 @@ class MyHome extends StatelessWidget {
                   ),
                 ),
                 Align(
-                  alignment: AlignmentDirectional(-1.39, 0.0),
+                  alignment: const AlignmentDirectional(-1.39, 0.0),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: AnimatedSquareWave(
-                      batteryPercentage: dashboardData != null &&
-                              dashboardData!['data'] != null
-                          ? dashboardData!['data'][0]['battery_percentage']
-                          : 0,
+                      batteryPercentage:
+                          screenData != null && screenData!['data'] != null
+                              ? screenData!['data'][0]['battery_percentage']
+                              : 0,
                       isCharging: isCharging,
                     ),
                   ),
@@ -302,7 +410,7 @@ class MyHome extends StatelessWidget {
                         'Origin',
                         style: TextStyle(
                           fontFamily: 'ethnocentric',
-                          fontSize: 54,
+                          fontSize: 64,
                           letterSpacing: 0,
                           color: Color(0x532D2A2A),
                           fontWeight: FontWeight.w400,
@@ -313,11 +421,11 @@ class MyHome extends StatelessWidget {
                 ),
                 Positioned(
                   top: MediaQuery.of(context).size.height *
-                      0.09, // 10% from the top
+                      0.13, // 10% from the top
                   left: MediaQuery.of(context).size.width *
                       0.38, // 5% from the left
                   child: Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.asset(
@@ -330,90 +438,68 @@ class MyHome extends StatelessWidget {
                     ),
                   ),
                 ),
-                Positioned(
-                  top: 68,
-                  left: 0,
-                  right: 260,
-                  child: Align(
-                    child: ClipRRect(
-                      child: Image.asset(
-                        'assets/images/briskhome.png',
-                        width: 160,
-                        height: 40,
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: MediaQuery.of(context).size.height * 0.08,
-                  left: MediaQuery.of(context).size.width * 0.335,
+                Align(
+                  alignment: Alignment.topRight,
                   child: Padding(
-                    padding: EdgeInsets.all(0), // Padding here is optional
-                    child: Text(
-                      'Hi $name', // Display the user's name here
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w400,
-                        fontFamily: 'Goldman',
-                        color: Color.fromARGB(255, 0, 0, 0),
-                      ),
+                    padding: EdgeInsets.only(
+                      top: MediaQuery.of(context).padding.top +
+                          25.0, // Adjust as needed
+                      right: 15.0, // Adjust as needed
+                    ),
+                    child: Container(
+                      width: 45,
+                      height: 45,
+                      color:
+                          Colors.transparent, // Background color for debugging
+                      child: profileImage != null
+                          ? ClipOval(
+                              child: Image.memory(
+                                profileImage!,
+                                width: 42,
+                                height: 42,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.person,
+                              size: 10,
+                              color: Colors.white,
+                            ),
                     ),
                   ),
                 ),
                 Positioned(
                   top: MediaQuery.of(context).size.height *
-                      0.08, // Dynamic top position
-                  left: MediaQuery.of(context).size.width *
-                      0.81, // Dynamic left position
-                  child: GestureDetector(
-                    onTap: () {
-                      // Navigate to the next page
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProfilePage(
-                            sessionId: sessionId,
-                            vehicleId: vehicleId,
-                          ), // Replace with your next page widget
-                        ),
-                      );
-                    },
-                    child: CircleAvatar(
-                      radius: MediaQuery.of(context).size.height *
-                          0.035, // Dynamic radius
-                      child: profilePicture != null
-                          ? ClipOval(
-                              child: profilePicture!.startsWith('http')
-                                  ? Image.network(
-                                      profilePicture!,
-                                      fit: BoxFit
-                                          .cover, // Ensures image covers the CircleAvatar
-                                      width:
-                                          MediaQuery.of(context).size.height *
-                                              0.1, // Dynamic width
-                                      height:
-                                          MediaQuery.of(context).size.height *
-                                              0.1, // Dynamic height
-                                    )
-                                  : Image.memory(
-                                      base64Decode(profilePicture!),
-                                      fit: BoxFit
-                                          .cover, // Ensures image covers the CircleAvatar
-                                      width:
-                                          MediaQuery.of(context).size.height *
-                                              0.1, // Dynamic width
-                                      height:
-                                          MediaQuery.of(context).size.height *
-                                              0.1, // Dynamic height
-                                    ),
-                            )
-                          : Icon(
-                              Icons.person,
-                              color: Colors
-                                  .black, // Adjust color to fit the design
-                              size: MediaQuery.of(context).size.height *
-                                  0.04, // Dynamic icon size
-                            ),
+                      0.075, // 10% from the top
+                  left: 0,
+                  right: MediaQuery.of(context).size.width *
+                      0.72, // 65% of screen width
+                  child: Align(
+                    child: ClipRRect(
+                      child: Image.asset(
+                        'assets/images/briskhome.png',
+                        width: MediaQuery.of(context).size.width *
+                            0.4, // 40% of screen width
+                        height: MediaQuery.of(context).size.height *
+                            0.05, // 5% of screen height
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: MediaQuery.of(context).size.height * 0.075,
+                  left: MediaQuery.of(context).size.width * 0.335,
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.all(0), // Padding here is optional
+                    child: Text(
+                      'Hi ${widget.name}', // Display the user's name here
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Montserrat',
+                        color: Color.fromARGB(255, 0, 0, 0),
+                      ),
                     ),
                   ),
                 ),
@@ -444,7 +530,10 @@ class MyHome extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const NotificationPage()),
+                            builder: (context) => const NotificationPage(
+                                // sessionId: widget.sessionId,
+                                // vehicleId: widget.vehicleId,
+                                )),
                       );
                     },
                     child: Image.asset(
@@ -466,8 +555,8 @@ class MyHome extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => FindMyVehicle(
-                            sessionId: sessionId,
-                            vehicleId: vehicleId,
+                            sessionId: widget.sessionId,
+                            vehicleId: widget.vehicleId,
                           ),
                         ),
                       );
@@ -576,24 +665,22 @@ class MyHome extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              dashboardData != null &&
-                                      dashboardData!['data'] != null
-                                  ? '${dashboardData!['data'][0]['mode']}'
+                              screenData != null && screenData!['data'] != null
+                                  ? '${screenData!['data'][0]['mode']}'
                                   : 'N/A',
                               style: TextStyle(
                                 fontSize: 30 *
                                     (MediaQuery.of(context).size.width / 850),
                                 fontWeight: FontWeight.w700,
-                                fontFamily: 'Goldman',
+                                fontFamily: 'Montserrat',
                                 color: const Color.fromARGB(208, 23, 234, 0),
                               ),
                             ),
-                            Text(
+                            const Text(
                               'Mode',
                               style: TextStyle(
-                                fontSize:
-                                    MediaQuery.of(context).size.width * 0.04,
-                                fontFamily: 'Goldman',
+                                fontSize: 13,
+                                fontFamily: 'Montserrat',
                                 fontWeight: FontWeight.w400,
                                 color: Colors.white,
                               ),
@@ -626,23 +713,23 @@ class MyHome extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  dashboardData != null &&
-                                          dashboardData!['data'] != null
-                                      ? '${dashboardData!['data'][0]['distance_to_empty']}'
+                                  screenData != null &&
+                                          screenData!['data'] != null
+                                      ? '${screenData!['data'][0]['distance_to_empty']}'
                                       : 'N/A',
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
-                                    fontFamily: 'Goldman',
+                                    fontFamily: 'Montserrat',
                                     color: Colors.white,
                                   ),
                                 ),
                                 const Text(
                                   'KM',
                                   style: TextStyle(
-                                    fontFamily: 'Goldman',
+                                    fontFamily: 'Montserrat',
                                     fontWeight: FontWeight.w400,
-                                    fontSize: 10,
+                                    fontSize: 12,
                                     color: Colors.white,
                                   ),
                                 ),
@@ -651,7 +738,7 @@ class MyHome extends StatelessWidget {
                             const Text(
                               'Range',
                               style: TextStyle(
-                                fontFamily: 'Goldman',
+                                fontFamily: 'Montserrat',
                                 fontWeight: FontWeight.w400,
                                 fontSize: 13,
                                 color: Colors.white,
@@ -672,7 +759,9 @@ class MyHome extends StatelessWidget {
                     onTap: () => AppSettings.openAppSettings(
                         type: AppSettingsType.bluetooth),
                     child: Image.asset(
-                      'assets/images/bluetooth.png',
+                      isBluetoothConnected
+                          ? 'assets/images/bluetooth_connected.png'
+                          : 'assets/images/bluetooth.png',
                       width: MediaQuery.of(context).size.width * 0.12,
                       height: MediaQuery.of(context).size.width * 0.12,
                       fit: BoxFit.cover,
@@ -694,8 +783,8 @@ class MyHome extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                               builder: (context) => MapScreen(
-                                    sessionId: sessionId,
-                                    vehicleId: vehicleId,
+                                    sessionId: widget.sessionId,
+                                    vehicleId: widget.vehicleId,
                                   )),
                         );
                       } else {
@@ -705,8 +794,8 @@ class MyHome extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                               builder: (context) => MapScreen(
-                                    sessionId: sessionId,
-                                    vehicleId: vehicleId,
+                                    sessionId: widget.sessionId,
+                                    vehicleId: widget.vehicleId,
                                   )),
                         );
                       }
@@ -721,7 +810,7 @@ class MyHome extends StatelessWidget {
                 ),
                 Padding(
                   padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.height * 0.12,
+                    top: MediaQuery.of(context).size.height * 0.105,
                     left: MediaQuery.of(context).size.width * 0.34,
                   ),
                   child: Text(
@@ -729,7 +818,7 @@ class MyHome extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
-                      fontFamily: 'Goldman',
+                      fontFamily: 'Montserrat',
                     ),
                   ),
                 ),
@@ -778,7 +867,6 @@ class MyHome extends StatelessWidget {
     BuildContext context,
     String sessionId,
     String vehicleId,
-    String name,
     Map<String, dynamic>? responseData,
     Map<String, dynamic>? dashboardData,
   ) {
@@ -931,6 +1019,7 @@ class _AnimatedSquareWaveState extends State<AnimatedSquareWave>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  bool _isCharging = false;
 
   @override
   void initState() {
@@ -939,12 +1028,16 @@ class _AnimatedSquareWaveState extends State<AnimatedSquareWave>
   }
 
   void _initializeAnimation() {
-    if (widget.isCharging) {
+    if (widget.isCharging && !_isCharging) {
       _controller = AnimationController(
         vsync: this,
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 5), // Slower cycle duration
       )..repeat();
       _animation = Tween<double>(begin: 0, end: 1).animate(_controller);
+      _isCharging = true;
+    } else if (!widget.isCharging && _isCharging) {
+      _controller.dispose();
+      _isCharging = false;
     }
   }
 
@@ -952,28 +1045,24 @@ class _AnimatedSquareWaveState extends State<AnimatedSquareWave>
   void didUpdateWidget(AnimatedSquareWave oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isCharging != oldWidget.isCharging) {
-      if (widget.isCharging) {
-        _initializeAnimation();
-      } else {
-        _controller.dispose();
-      }
+      _initializeAnimation();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     if (!widget.isCharging) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink(); // Hide the widget if not charging
     }
 
     return SizedBox(
       width: MediaQuery.of(context).size.width * 0.5,
-      height: MediaQuery.of(context).size.width * 0.5,
+      height: MediaQuery.of(context).size.width * 0.5, // Make it a square
       child: AnimatedBuilder(
         animation: _animation,
         builder: (context, child) {
           return CustomPaint(
-            painter: SquareWavePainter(_animation.value),
+            painter: SquareWavePainter(_animation.value, _controller.value),
             child: const SizedBox.expand(),
           );
         },
@@ -983,7 +1072,7 @@ class _AnimatedSquareWaveState extends State<AnimatedSquareWave>
 
   @override
   void dispose() {
-    if (widget.isCharging) {
+    if (_isCharging) {
       _controller.dispose();
     }
     super.dispose();
@@ -992,13 +1081,14 @@ class _AnimatedSquareWaveState extends State<AnimatedSquareWave>
 
 class SquareWavePainter extends CustomPainter {
   final double animationValue;
+  final double controllerValue; // Use controller value to control timing
 
-  SquareWavePainter(this.animationValue);
+  SquareWavePainter(this.animationValue, this.controllerValue);
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Color.fromARGB(255, 255, 255, 255).withOpacity(0.15);
+      ..color = const Color.fromARGB(255, 255, 255, 255).withOpacity(0.15);
 
     final maxDimension = size.width;
     final center = Offset(size.width / 2, size.height / 2);
@@ -1011,10 +1101,15 @@ class SquareWavePainter extends CustomPainter {
     canvas.translate(
         -center.dx, -center.dy); // Move the origin back to the top-left corner
 
-    const squaresCount = 5;
+    const squaresCount = 7;
 
     for (int i = 2; i < squaresCount; i++) {
-      final dimension = maxDimension * animationValue * (1 - i / squaresCount);
+      // Slow down animation by reducing frequency
+      final timeBasedValue =
+          (controllerValue * 0.5 * 2 * pi + i * pi / 2) % (2 * pi);
+      final dimension = maxDimension *
+          (0.5 + 0.5 * sin(timeBasedValue)) *
+          (1 - i / squaresCount);
       final offset = (maxDimension - dimension) / 2;
       final rect = Rect.fromLTWH(offset, offset, dimension, dimension);
       final radius = 15.0; // Adjust the radius of the corners
