@@ -189,14 +189,14 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             children: <Widget>[
               Image.asset(
                 imagePath,
-                height: 90.0,
-                width: 90.0,
+                height: 55.0,
+                width: 55.0,
               ),
-              const SizedBox(height: 20), // Use width for horizontal spacing
+              const SizedBox(width: 10), // Use width for horizontal spacing
               Expanded(
                 child: Text(
                   message,
-                  textAlign: TextAlign.center,
+                  textAlign: TextAlign.start,
                   style: const TextStyle(
                     fontSize: 16,
                     fontFamily: 'Montserrat',

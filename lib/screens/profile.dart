@@ -125,7 +125,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _uploadImage(String documentName, File? imageFile) async {
     if (imageFile == null) {
-      _showDialog('Error', 'No image selected for $documentName', Icons.error);
+      _showDialog('No image selected for $documentName',
+          Image.asset('assets/images/upload.png'));
       return;
     }
 
@@ -147,29 +148,41 @@ class _ProfilePageState extends State<ProfilePage> {
       print('Upload Response for $documentName: $responseBody');
 
       if (response.statusCode == 200) {
-        _showDialog(
-            '', 'Profile Photo Uploaded Successfully', Icons.check_circle);
+        _showDialog('Profile Photo Uploaded Successfully',
+            Image.asset('assets/images/upload.png'));
       } else {
-        _showDialog(
-            '', 'Upload failed for $documentName: $responseBody', Icons.error);
+        _showDialog('Upload failed for $documentName: $responseBody',
+            Image.asset('assets/images/error.png'));
       }
     } catch (e) {
-      _showDialog('', 'Error uploading image: $e', Icons.error);
+      _showDialog(
+          'Error uploading image: $e', Image.asset('assets/images/error.png'));
     }
   }
 
-  void _showDialog(String title, String message, IconData icon,
-      {VoidCallback? onOK}) {
+  void _showDialog(String message, Widget image, {VoidCallback? onOK}) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           content: Row(
-            children: <Widget>[
-              Icon(icon,
-                  color: icon == Icons.error ? Colors.red : Colors.green),
+            children: [
+              SizedBox(
+                height: 50, // Set desired height
+                width: 50, // Set desired width
+                child: image, // Display the image with specified size
+              ),
               const SizedBox(width: 10),
-              Expanded(child: Text(message)),
+              Expanded(
+                child: Text(
+                  message,
+                  textAlign: TextAlign.start,
+                  style: const TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14),
+                ),
+              ),
             ],
           ),
         );

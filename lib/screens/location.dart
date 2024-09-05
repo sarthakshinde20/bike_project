@@ -239,7 +239,7 @@ class MapScreenState extends State<MapScreen> {
                     'Back',
                     style: TextStyle(
                       fontFamily: 'Goldman',
-                      fontSize: 17,
+                      fontSize: screenWidth * 0.045,
                       fontWeight: FontWeight.w700,
                       color: Colors.black,
                     ),
@@ -304,9 +304,6 @@ class MapScreenState extends State<MapScreen> {
                         ),
                         hintText: 'Destination',
                         hintStyle: const TextStyle(
-                          fontFamily: 'Raleway',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 15,
                           color: Color.fromARGB(255, 160, 160, 160),
                         ),
                         suffixIcon: IconButton(
@@ -375,8 +372,8 @@ class MapScreenState extends State<MapScreen> {
                                 'Please select a destination first.',
                                 style: TextStyle(
                                   fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: 'Raleway',
                                   color: Colors.black,
                                 ),
                                 textAlign: TextAlign.start,

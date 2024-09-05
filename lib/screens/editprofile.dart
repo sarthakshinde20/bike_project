@@ -29,7 +29,8 @@ class _UploadPageState extends State<UploadPage> {
     try {
       await _showImageSourceDialog(documentType, title);
     } catch (e) {
-      _showDialog('Error picking image: $e', 'Error', Icons.error);
+      _showDialog(
+          'Error picking image: $e', Image.asset('assets/images/error.png'));
     }
   }
 
@@ -142,7 +143,8 @@ class _UploadPageState extends State<UploadPage> {
 
   Future<void> _uploadImage(String documentName, File? imageFile) async {
     if (imageFile == null) {
-      _showDialog('Error', 'Please Select Image to Upload', Icons.error);
+      _showDialog('Please Select Image to Upload',
+          Image.asset('assets/images/error.png'));
       return;
     }
 
@@ -162,50 +164,48 @@ class _UploadPageState extends State<UploadPage> {
       final responseBody = await response.stream.bytesToString();
 
       if (response.statusCode == 200) {
-        _showDialog('Success', 'Upload successful for $documentName',
-            Icons.check_circle);
+        _showDialog('Upload successful for $documentName',
+            Image.asset('assets/images/success.png'));
       } else {
-        _showDialog('Error', 'Upload failed for $documentName: $responseBody',
-            Icons.error);
+        _showDialog('Upload failed for $documentName: $responseBody',
+            Image.asset('assets/images/error.png'));
       }
     } catch (e) {
-      _showDialog('Error', 'Error uploading image: $e', Icons.error);
+      _showDialog(
+          'Error uploading image: $e', Image.asset('assets/images/error.png'));
     }
   }
 
-  void _showDialog(String title, String message, IconData icon) {
+  void _showDialog(String message, Widget image) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        // Automatically close the dialog after 2 seconds
         Future.delayed(const Duration(seconds: 2), () {
           Navigator.of(context).pop();
         });
 
         return AlertDialog(
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          content: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon,
-                  color:
-                      icon == Icons.check_circle ? Colors.green : Colors.red),
+              SizedBox(
+                height: 55, // Set desired height
+                width: 55, // Set desired width
+                child: image, // Display the image with specified size
+              ),
               const SizedBox(width: 10),
-              Text(
-                title,
-                style: const TextStyle(
-                    fontFamily: 'Raleway',
-                    fontWeight: FontWeight.w700,
-                    fontSize: 24),
-                textAlign: TextAlign.center,
+              Expanded(
+                child: Text(
+                  message,
+                  textAlign: TextAlign.start,
+                  style: const TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16),
+                ),
               ),
             ],
-          ),
-          content: Text(
-            message,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-                fontFamily: 'Raleway',
-                fontWeight: FontWeight.w600,
-                fontSize: 14),
           ),
           actions: <Widget>[],
         );

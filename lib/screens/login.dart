@@ -64,15 +64,14 @@ class _LoginPageState extends State<LoginPage> {
               arguments: mobileNumber,
             );
             _showErrorDialog(
-                'OTP sent successfully', 'assets/images/otpinvalid.png');
+                'OTP Send Successfully', 'assets/images/success.png');
           } else {
             _showErrorDialog(
                 'You cannot login as your mobile number is not registered with it.',
                 'assets/images/otpinvalid.png');
           }
         } catch (e) {
-          _showErrorDialog(
-              'Error parsing response', 'assets/images/otpinvalid.png');
+          _showErrorDialog('Error parsing response', 'assets/images/error.png');
         }
       } else {
         _showErrorDialog('Failed to send OTP', 'assets/images/otpinvalid.png');
@@ -91,14 +90,14 @@ class _LoginPageState extends State<LoginPage> {
             children: <Widget>[
               Image.asset(
                 imagePath,
-                height: 90.0,
-                width: 90.0,
+                height: 50.0,
+                width: 50.0,
               ),
-              const SizedBox(height: 20), // Use width for horizontal spacing
+              const SizedBox(width: 5), // Use width for horizontal spacing
               Expanded(
                 child: Text(
                   message,
-                  textAlign: TextAlign.center,
+                  textAlign: TextAlign.start,
                   style: const TextStyle(
                     fontSize: 16,
                     fontFamily: 'Montserrat',
