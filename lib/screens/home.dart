@@ -252,7 +252,7 @@ class _MyHomeState extends State<MyHome> {
                   ),
                 ),
                 Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional(-0.8, 0),
                   child: Transform.rotate(
                     angle: 45 * (pi / 180),
                     child: Container(
@@ -1055,17 +1055,20 @@ class _AnimatedSquareWaveState extends State<AnimatedSquareWave>
       return const SizedBox.shrink(); // Hide the widget if not charging
     }
 
-    return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.5,
-      height: MediaQuery.of(context).size.width * 0.5, // Make it a square
-      child: AnimatedBuilder(
-        animation: _animation,
-        builder: (context, child) {
-          return CustomPaint(
-            painter: SquareWavePainter(_animation.value, _controller.value),
-            child: const SizedBox.expand(),
-          );
-        },
+    return Align(
+      alignment: AlignmentDirectional(-1.1, 0),
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.5,
+        height: MediaQuery.of(context).size.width * 0.5,
+        child: AnimatedBuilder(
+          animation: _animation,
+          builder: (context, child) {
+            return CustomPaint(
+              painter: SquareWavePainter(_animation.value, _controller.value),
+              child: const SizedBox.expand(),
+            );
+          },
+        ),
       ),
     );
   }

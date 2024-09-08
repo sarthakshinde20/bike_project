@@ -6,6 +6,7 @@ import 'package:geocoding/geocoding.dart' as geo;
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'videoscreen.dart';
 
 class MapScreen extends StatefulWidget {
   final String sessionId;
@@ -18,7 +19,7 @@ class MapScreen extends StatefulWidget {
 }
 
 class MapScreenState extends State<MapScreen> {
-  GoogleMapController? mapController; // Make mapController nullable
+  GoogleMapController? mapController;
   late LatLng _startingLocation;
   bool _isLoading = true;
   final TextEditingController _destinationController = TextEditingController();
@@ -30,10 +31,9 @@ class MapScreenState extends State<MapScreen> {
   late PolylinePoints polylinePoints;
   final Set<Marker> _markers = {};
 
-  // Define the LatLngBounds for India
   final LatLngBounds _indiaBounds = LatLngBounds(
-    southwest: LatLng(6.4627, 68.1097), // Southwest coordinate (approx.)
-    northeast: LatLng(35.5133, 97.3954), // Northeast coordinate (approx.)
+    southwest: LatLng(6.4627, 68.1097),
+    northeast: LatLng(35.5133, 97.3954),
   );
 
   @override
@@ -45,7 +45,6 @@ class MapScreenState extends State<MapScreen> {
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
-    // Apply the LatLngBounds to restrict the map
     mapController!.moveCamera(
       CameraUpdate.newLatLngBounds(_indiaBounds, 0),
     );
@@ -59,7 +58,7 @@ class MapScreenState extends State<MapScreen> {
     final response = await http.get(Uri.parse(
       'http://34.93.202.185:5000/api/v1/get_vehicle_dashboard?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}',
     ));
-    print('Response Body: ${response.body}'); // Debugging statement
+    print('Response Body: ${response.body}');
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -81,7 +80,6 @@ class MapScreenState extends State<MapScreen> {
 
   _updateCameraPosition(LatLng position) {
     if (mapController != null) {
-      // Ensure that the camera stays within India bounds
       mapController!.animateCamera(
         CameraUpdate.newCameraPosition(
           CameraPosition(
@@ -187,13 +185,24 @@ class MapScreenState extends State<MapScreen> {
         'session': widget.sessionId,
       }),
     );
+
     print(
         'destination Location: Latitude: ${location.latitude}, Longitude: ${location.longitude}');
 
     if (response.statusCode == 200) {
-      print('Location successfully sent to API');
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) =>
+              VideoPlayerScreen(videoPath: 'assets/videos/success.mp4'),
+        ),
+      );
     } else {
-      print('Failed to send location to API');
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) =>
+              VideoPlayerScreen(videoPath: 'assets/videos/failure.mp4'),
+        ),
+      );
     }
   }
 
@@ -215,10 +224,8 @@ class MapScreenState extends State<MapScreen> {
             polylines: _polylines,
             markers: _markers,
             myLocationEnabled: true,
-            minMaxZoomPreference: const MinMaxZoomPreference(
-                5.0, 20.0), // Optional: Restrict zoom levels
-            cameraTargetBounds:
-                CameraTargetBounds(_indiaBounds), // Restrict camera to India
+            minMaxZoomPreference: const MinMaxZoomPreference(5.0, 20.0),
+            cameraTargetBounds: CameraTargetBounds(_indiaBounds),
           ),
           Positioned(
             top: screenHeight * 0.08,
@@ -306,12 +313,6 @@ class MapScreenState extends State<MapScreen> {
                         hintStyle: const TextStyle(
                           color: Color.fromARGB(255, 160, 160, 160),
                         ),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.search, color: Colors.blue),
-                          onPressed: () {
-                            _setDestination(_destinationController.text);
-                          },
-                        ),
                       ),
                     ),
                     suggestionsCallback: _getPlaceSuggestions,
@@ -367,16 +368,33 @@ class MapScreenState extends State<MapScreen> {
                               Navigator.of(context).pop();
                             });
 
-                            return const AlertDialog(
-                              content: Text(
-                                'Please select a destination first.',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: 'Raleway',
-                                  color: Colors.black,
-                                ),
-                                textAlign: TextAlign.start,
+                            return AlertDialog(
+                              content: Row(
+                                mainAxisSize: MainAxisSize
+                                    .min, // Adjusts the row to its content's width
+                                children: <Widget>[
+                                  Image.asset(
+                                    'assets/images/error.png', // Replace with your image path
+                                    width: 50, // Adjust width as needed
+                                    height: 50, // Adjust height as needed
+                                    fit: BoxFit.cover, // Adjust fit as needed
+                                  ),
+                                  SizedBox(
+                                      width:
+                                          16), // Space between image and text
+                                  Expanded(
+                                    child: Text(
+                                      'Please select a destination first.',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        fontFamily: 'Montserrat',
+                                        color: Colors.black,
+                                      ),
+                                      textAlign: TextAlign.start,
+                                    ),
+                                  ),
+                                ],
                               ),
                             );
                           },
