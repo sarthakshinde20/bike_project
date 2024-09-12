@@ -165,7 +165,7 @@ class _UploadPageState extends State<UploadPage> {
 
       if (response.statusCode == 200) {
         _showDialog('Upload successful for $documentName',
-            Image.asset('assets/images/success.png'));
+            Image.asset('assets/images/upload.png'));
       } else {
         _showDialog('Upload failed for $documentName: $responseBody',
             Image.asset('assets/images/error.png'));
@@ -190,8 +190,8 @@ class _UploadPageState extends State<UploadPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
-                height: 55, // Set desired height
-                width: 55, // Set desired width
+                height: 75, // Set desired height
+                width: 75, // Set desired width
                 child: image, // Display the image with specified size
               ),
               const SizedBox(width: 10),

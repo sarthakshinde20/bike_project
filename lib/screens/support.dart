@@ -117,7 +117,6 @@ class _SupportPageState extends State<SupportPage> {
                   : const EdgeInsets.fromLTRB(
                       25, 50, 25, 25), // Default margins for smaller screens
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 255, 255, 255),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: TextFormField(

@@ -252,7 +252,7 @@ class _MyHomeState extends State<MyHome> {
                   ),
                 ),
                 Align(
-                  alignment: AlignmentDirectional(-0.8, 0),
+                  alignment: const AlignmentDirectional(-0.8, 0),
                   child: Transform.rotate(
                     angle: 45 * (pi / 180),
                     child: Container(
@@ -305,6 +305,18 @@ class _MyHomeState extends State<MyHome> {
                                     ),
                                     borderRadius:
                                         BorderRadius.circular(size * 0.125),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(
+                                            0.5), // Adjust opacity as needed
+                                        offset: const Offset(5,
+                                            5), // Shadow is shifted downwards
+                                        blurRadius:
+                                            8, // Increase blur radius for more spread
+                                        spreadRadius:
+                                            0, // Shadow size, set to 0 to keep shadow close to the container
+                                      ),
+                                    ],
                                   ),
                                   child: Center(
                                     child: Transform.rotate(
@@ -361,9 +373,11 @@ class _MyHomeState extends State<MyHome> {
                                               ),
                                             ],
                                           ),
-                                          const Text(
-                                            'Battery',
-                                            style: TextStyle(
+                                          Text(
+                                            isCharging
+                                                ? 'Charging'
+                                                : 'Battery', // Show 'Charging' when charging, otherwise show 'Battery'
+                                            style: const TextStyle(
                                               fontFamily: 'Prompt',
                                               fontWeight: FontWeight.w400,
                                               fontSize: 13,
@@ -875,21 +889,37 @@ class _MyHomeState extends State<MyHome> {
     final double screenHeight = MediaQuery.of(context).size.height;
 
     // Define image size based on screen width
-    final double imageSize = screenWidth * 0.09; // 6% of screen width
+    final double imageSize = screenWidth * 0.1; // 6% of screen width
     final double leftPadding =
-        screenWidth * 0.05; // Adjust the left padding as needed
+        screenWidth * 0.12; // Adjust the left padding as needed
 
     return [
       Padding(
         padding: EdgeInsets.only(left: leftPadding),
         child: ListTile(
-          leading: Image.asset('assets/images/profile.png',
-              width: imageSize, height: imageSize),
-          title: const Text('Profile',
-              style: const TextStyle(
-                  fontFamily: 'Raleway',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 20)),
+          contentPadding: EdgeInsets.zero, // Remove default padding
+          leading: Image.asset(
+            'assets/images/profile.png',
+            width: imageSize,
+            height: imageSize,
+          ),
+          title: const Row(
+            children: [
+              SizedBox(
+                  width:
+                      10), // Adjust this width to increase the space between image and title
+              Expanded(
+                child: Text(
+                  'Profile',
+                  style: TextStyle(
+                    fontFamily: 'Raleway',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+            ],
+          ),
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -901,16 +931,31 @@ class _MyHomeState extends State<MyHome> {
           ),
         ),
       ),
+
       Padding(
         padding: EdgeInsets.only(left: leftPadding),
         child: ListTile(
-          leading: Image.asset('assets/images/service.png',
-              width: imageSize, height: imageSize),
-          title: const Text('Services',
-              style: const TextStyle(
-                  fontFamily: 'Raleway',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 20)),
+          contentPadding: EdgeInsets.zero, // Remove default padding
+          leading: Image.asset(
+            'assets/images/service.png',
+            width: imageSize,
+            height: imageSize,
+          ),
+          title: const Row(
+            children: [
+              SizedBox(width: 10), // Adjust this width to control spacing
+              Expanded(
+                child: Text(
+                  'Services',
+                  style: TextStyle(
+                    fontFamily: 'Raleway',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+            ],
+          ),
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -959,13 +1004,27 @@ class _MyHomeState extends State<MyHome> {
       Padding(
         padding: EdgeInsets.only(left: leftPadding),
         child: ListTile(
-          leading: Image.asset('assets/images/bikedetails.png',
-              width: imageSize, height: imageSize),
-          title: const Text('Bike Details',
-              style: const TextStyle(
-                  fontFamily: 'Raleway',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 20)),
+          contentPadding: EdgeInsets.zero, // Remove default padding
+          leading: Image.asset(
+            'assets/images/bikedetails.png',
+            width: imageSize,
+            height: imageSize,
+          ),
+          title: const Row(
+            children: [
+              SizedBox(width: 10), // Adjust this width to control spacing
+              Expanded(
+                child: Text(
+                  'Bike Details',
+                  style: TextStyle(
+                    fontFamily: 'Raleway',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+            ],
+          ),
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -982,13 +1041,27 @@ class _MyHomeState extends State<MyHome> {
       Padding(
         padding: EdgeInsets.only(left: leftPadding),
         child: ListTile(
-          leading: Image.asset('assets/images/support.png',
-              width: imageSize, height: imageSize),
-          title: const Text('Support',
-              style: const TextStyle(
-                  fontFamily: 'Raleway',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 20)),
+          contentPadding: EdgeInsets.zero, // Remove default padding
+          leading: Image.asset(
+            'assets/images/support.png',
+            width: imageSize,
+            height: imageSize,
+          ),
+          title: const Row(
+            children: [
+              SizedBox(width: 10), // Adjust this width to control spacing
+              Expanded(
+                child: Text(
+                  'Support',
+                  style: TextStyle(
+                    fontFamily: 'Raleway',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+            ],
+          ),
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -1056,7 +1129,7 @@ class _AnimatedSquareWaveState extends State<AnimatedSquareWave>
     }
 
     return Align(
-      alignment: AlignmentDirectional(-1.1, 0),
+      alignment: const AlignmentDirectional(-1.1, 0),
       child: SizedBox(
         width: MediaQuery.of(context).size.width * 0.5,
         height: MediaQuery.of(context).size.width * 0.5,
