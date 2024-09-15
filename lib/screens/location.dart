@@ -5,6 +5,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geocoding/geocoding.dart' as geo;
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'videoscreen.dart';
 
@@ -32,15 +33,30 @@ class MapScreenState extends State<MapScreen> {
   final Set<Marker> _markers = {};
 
   final LatLngBounds _indiaBounds = LatLngBounds(
-    southwest: LatLng(6.4627, 68.1097),
-    northeast: LatLng(35.5133, 97.3954),
+    southwest: const LatLng(6.4627, 68.1097),
+    northeast: const LatLng(35.5133, 97.3954),
   );
+
+  List<String> _favoritePlaces = [];
 
   @override
   void initState() {
     super.initState();
     polylinePoints = PolylinePoints();
     _fetchStartingLocation();
+    _loadFavoritePlaces();
+  }
+
+  Future<void> _loadFavoritePlaces() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _favoritePlaces = prefs.getStringList('favoritePlaces') ?? [];
+    });
+  }
+
+  Future<void> _saveFavoritePlaces() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('favoritePlaces', _favoritePlaces);
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -108,7 +124,7 @@ class MapScreenState extends State<MapScreen> {
         setState(() {
           _polylines.clear();
           _polylines.add(Polyline(
-            polylineId: PolylineId('route'),
+            polylineId: const PolylineId('route'),
             points: _polylineCoordinates,
             width: 5,
             color: Colors.blue,
@@ -146,12 +162,12 @@ class MapScreenState extends State<MapScreen> {
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Destination not found')),
+          const SnackBar(content: Text('Destination not found')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error finding destination')),
+        const SnackBar(content: Text('Error finding destination')),
       );
     }
   }
@@ -206,6 +222,127 @@ class MapScreenState extends State<MapScreen> {
     }
   }
 
+  void _addFavoritePlace(String place) {
+    setState(() {
+      // Check if the place is already in the favorite places list
+      if (!_favoritePlaces.contains(place)) {
+        _favoritePlaces.add(place);
+        _saveFavoritePlaces(); // Save favorite places to shared_preferences
+      }
+    });
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // Create a callback to close the dialog after 3 seconds
+        Future.delayed(const Duration(seconds: 3), () {
+          Navigator.of(context).pop(); // Close the dialog
+        });
+
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text(
+            'Added to Favorites',
+            style: TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          content: Text(
+            _favoritePlaces.contains(place)
+                ? '$place is already in your favorites!'
+                : '$place has been added to your favorites!',
+            style: const TextStyle(
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Show dialog with favorite places
+  void _showFavoritePlacesDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text(
+            'Favorite Places',
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Montserrat',
+                fontSize: 18),
+            textAlign: TextAlign.start,
+          ),
+          content: _favoritePlaces.isNotEmpty
+              ? Container(
+                  width: double.maxFinite,
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount:
+                        _favoritePlaces.length > 5 ? 5 : _favoritePlaces.length,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          title: Text(
+                            _favoritePlaces[index],
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.remove_circle_outline,
+                                color: Colors.red),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              _removeFavoritePlace(_favoritePlaces[index]);
+                            },
+                          ),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            _setDestination(_favoritePlaces[index]);
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                )
+              : const Text('No favorite places added yet.',
+                  style: TextStyle(
+                      color: Color.fromARGB(255, 0, 0, 0),
+                      fontFamily: 'Montserrat')),
+          actions: [
+            TextButton(
+              child: const Text(
+                'Close',
+                style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _removeFavoritePlace(String place) {
+    setState(() {
+      _favoritePlaces.remove(place);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
@@ -253,6 +390,24 @@ class MapScreenState extends State<MapScreen> {
                   ),
                 ],
               ),
+            ),
+          ),
+          Positioned(
+            bottom: screenHeight * 0.25,
+            right: screenWidth * 0.03,
+            child: IconButton(
+              icon: Icon(
+                Icons.bookmark,
+                color: Colors.black,
+                size: screenWidth * 0.1,
+              ),
+              onPressed: () {
+                if (_destinationController.text.isNotEmpty) {
+                  _addFavoritePlace(_destinationController.text);
+                } else {
+                  _showFavoritePlacesDialog();
+                }
+              },
             ),
           ),
           Positioned(
@@ -379,10 +534,10 @@ class MapScreenState extends State<MapScreen> {
                                     height: 50, // Adjust height as needed
                                     fit: BoxFit.cover, // Adjust fit as needed
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                       width:
                                           16), // Space between image and text
-                                  Expanded(
+                                  const Expanded(
                                     child: Text(
                                       'Please select a destination first.',
                                       style: TextStyle(
