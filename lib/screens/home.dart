@@ -44,6 +44,7 @@ class _MyHomeState extends State<MyHome> {
   late FlutterBluePlus flutterBlue;
   bool isBluetoothConnected = false;
   Map<String, dynamic>? screenData;
+  DateTime? lastSyncTime;
 
   @override
   void initState() {
@@ -66,6 +67,21 @@ class _MyHomeState extends State<MyHome> {
       return 'Good Evening!';
     } else {
       return 'Good Day!';
+    }
+  }
+
+  String timeAgoSinceLastSync() {
+    if (lastSyncTime == null) return 'Last sync';
+
+    final duration = DateTime.now().difference(lastSyncTime!);
+    if (duration.inMinutes < 1) {
+      return 'just now';
+    } else if (duration.inMinutes < 60) {
+      return '${duration.inMinutes} mins ago';
+    } else if (duration.inHours < 24) {
+      return '${duration.inHours} hours ago';
+    } else {
+      return '${duration.inDays} days ago';
     }
   }
 
@@ -97,6 +113,7 @@ class _MyHomeState extends State<MyHome> {
       if (response.statusCode == 200) {
         setState(() {
           screenData = json.decode(response.body);
+          lastSyncTime = DateTime.now(); // Update last sync time
           isLoading = false;
         });
       } else {
@@ -479,6 +496,23 @@ class _MyHomeState extends State<MyHome> {
                               size: 10,
                               color: Colors.white,
                             ),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter, // Center at bottom
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.only(bottom: 15.0), // Adjust padding
+                    child: Text(
+                      lastSyncTime != null
+                          ? 'Last sync: ${lastSyncTime!.day}/${lastSyncTime!.month}/${lastSyncTime!.year}, ${timeAgoSinceLastSync()}'
+                          : 'Last sync',
+                      style: const TextStyle(
+                          color: Color.fromARGB(255, 0, 0, 0),
+                          fontSize: 8,
+                          fontWeight: FontWeight.w300,
+                          fontFamily: 'Montserrat'),
                     ),
                   ),
                 ),

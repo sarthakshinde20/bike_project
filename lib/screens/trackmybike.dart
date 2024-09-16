@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 class FindMyVehicle extends StatefulWidget {
   final String sessionId;
@@ -19,8 +21,13 @@ class FindMyVehicle extends StatefulWidget {
 
 class _FindMyVehicleState extends State<FindMyVehicle> {
   Map<String, dynamic>? vehicleLocation;
+  LatLng? userLocation;
   bool isLoading = true;
-  final String googleApiKey = 'AIzaSyDIEuHp8fW56w3FpPw02icU6TtmRkKxYm4';
+  Set<Polyline> polylines = {};
+  List<LatLng> polylineCoordinates = [];
+  late GoogleMapController mapController;
+  final String googleApiKey =
+      'AIzaSyDIEuHp8fW56w3FpPw02icU6TtmRkKxYm4'; // Add your API key here
 
   @override
   void initState() {
@@ -29,11 +36,14 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
   }
 
   Future<void> fetchVehicleLocation() async {
+    // Get user location
+    await getUserLocation();
+
+    // Fetch vehicle location from API
     final response = await http.get(
       Uri.parse(
           'http://34.93.202.185:5000/api/v1/get_vehicle_dashboard?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}'),
     );
-    print('Response Body: ${response.body}'); // Debugging statement
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       setState(() {
@@ -43,6 +53,9 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
         };
         isLoading = false;
       });
+
+      // After fetching vehicle location, draw the route
+      drawRoute();
     } else {
       setState(() {
         isLoading = false;
@@ -51,16 +64,59 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
     }
   }
 
-  Future<void> turnOnLights() async {
-    final response = await http.get(
-      Uri.parse(
-          'http://34.93.202.185:5000/api/v1/vehicle/find_my_vehicle?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}'),
+  Future<void> getUserLocation() async {
+    Location location = Location();
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
+    LocationData _locationData;
+
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    _locationData = await location.getLocation();
+    setState(() {
+      userLocation = LatLng(_locationData.latitude!, _locationData.longitude!);
+    });
+  }
+
+  Future<void> drawRoute() async {
+    if (userLocation == null || vehicleLocation == null) return;
+
+    PolylinePoints polylinePoints = PolylinePoints();
+    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+      googleApiKey,
+      PointLatLng(userLocation!.latitude, userLocation!.longitude),
+      PointLatLng(vehicleLocation!['latitude'], vehicleLocation!['longitude']),
     );
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      print('Lights turned on: ${data['message']}');
-    } else {
-      print('Failed to turn on lights');
+
+    if (result.points.isNotEmpty) {
+      result.points.forEach((PointLatLng point) {
+        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+      });
+
+      setState(() {
+        polylines.add(
+          Polyline(
+            polylineId: const PolylineId("route"),
+            color: Colors.blue,
+            width: 6,
+            points: polylineCoordinates,
+          ),
+        );
+      });
     }
   }
 
@@ -79,21 +135,18 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
           children: [
             Image(
               image: AssetImage(imagePath),
-              width:
-                  deviceWidth * 0.4, // Adjust the size of the image as needed
-              height:
-                  deviceWidth * 0.15, // Adjust the size of the image as needed
+              width: deviceWidth * 0.4,
+              height: deviceWidth * 0.15,
             ),
-            SizedBox(
-                height:
-                    deviceWidth * 0.0), // Add spacing between image and text
+            SizedBox(height: deviceWidth * 0.0),
             Text(
               label,
               style: const TextStyle(
-                  color: Colors.black,
-                  fontFamily: 'Raleway',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600),
+                color: Colors.black,
+                fontFamily: 'Raleway',
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -111,12 +164,12 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
         children: [
           isLoading
               ? const Center(child: CircularProgressIndicator())
-              : vehicleLocation != null
-                  ? VehicleMap(
-                      latitude: vehicleLocation!['latitude'],
-                      longitude: vehicleLocation!['longitude'],
-                    )
-                  : const Center(child: Text('Location not found')),
+              : VehicleMap(
+                  userLocation: userLocation!,
+                  vehicleLocation: LatLng(vehicleLocation!['latitude'],
+                      vehicleLocation!['longitude']),
+                  polylines: polylines,
+                ),
           Positioned(
             top: screenHeight * 0.08,
             left: screenWidth * 0.07,
@@ -145,100 +198,6 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
               ),
             ),
           ),
-          Positioned(
-            bottom: screenHeight * 0.15,
-            right: screenWidth * 0.02,
-            height: 55,
-            width: 55,
-            child: FloatingActionButton(
-              backgroundColor: Colors.white,
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return Theme(
-                      data: Theme.of(context).copyWith(
-                        dialogBackgroundColor: Colors.white,
-                      ),
-                      child: AlertDialog(
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 20.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  _buildDialogOption(
-                                    'assets/images/horn_light.png',
-                                    'Honk & Turn On Lights',
-                                    () async {
-                                      Navigator.of(context)
-                                          .pop(); // Close the dialog
-                                      await turnOnLights(); // Call the second API
-                                    },
-                                    MediaQuery.of(context).size.width,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const SizedBox(height: 10),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.zero,
-                                    ),
-                                    child: Container(
-                                      width: 120,
-                                      height: 50,
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: const Color.fromARGB(
-                                              255, 9, 84, 94),
-                                          width: 2.0,
-                                        ),
-                                        borderRadius: BorderRadius.circular(35),
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: const Text(
-                                        "Cancel",
-                                        style: TextStyle(
-                                            color:
-                                                Color.fromARGB(255, 9, 84, 94),
-                                            fontFamily: 'Raleway',
-                                            fontWeight: FontWeight.w400,
-                                            fontSize: 16),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-              tooltip: 'Find Bike',
-              child: Image.asset(
-                'assets/images/find.png',
-                color: Colors.black, // Replace with your image path
-                width: 45.0, // Set the desired width
-                height: 45.0, // Set the desired height
-              ),
-            ),
-          )
         ],
       ),
     );
@@ -246,26 +205,34 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
 }
 
 class VehicleMap extends StatelessWidget {
-  final double latitude;
-  final double longitude;
+  final LatLng userLocation;
+  final LatLng vehicleLocation;
+  final Set<Polyline> polylines;
 
-  VehicleMap({required this.latitude, required this.longitude});
+  VehicleMap({
+    required this.userLocation,
+    required this.vehicleLocation,
+    required this.polylines,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final LatLng vehicleLocation = LatLng(latitude, longitude);
-
     return GoogleMap(
       initialCameraPosition: CameraPosition(
-        target: vehicleLocation,
+        target: userLocation,
         zoom: 14.0,
       ),
       markers: {
+        Marker(
+          markerId: const MarkerId('userLocation'),
+          position: userLocation,
+        ),
         Marker(
           markerId: const MarkerId('vehicleLocation'),
           position: vehicleLocation,
         ),
       },
+      polylines: polylines,
       onMapCreated: (GoogleMapController controller) {
         // You can set the map controller here if needed
       },
