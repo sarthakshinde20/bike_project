@@ -96,14 +96,18 @@ class _SupportPageState extends State<SupportPage> {
                         fontWeight: FontWeight.w600,
                       ),
                     )
-                  : const Text(
-                      'Hello, How can we help you ?',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 18,
-                        letterSpacing: 0,
-                        fontWeight: FontWeight.w600,
+                  : const SizedBox(
+                      width: 200, // Set a width to control line breaks
+                      child: Text(
+                        'Hello, How can we help you?',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontSize: 18,
+                          letterSpacing: 0,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        softWrap: true, // Allow text to wrap to the next line
                       ),
                     ),
             ),
@@ -112,67 +116,62 @@ class _SupportPageState extends State<SupportPage> {
             alignment: const AlignmentDirectional(0, -0.15),
             child: Container(
               margin: MediaQuery.of(context).size.width > 600
-                  ? const EdgeInsets.fromLTRB(
-                      50, 70, 50, 40) // Adjusted margins for larger screens
+                  ? const EdgeInsets.fromLTRB(60, 70, 60, 40) // Larger screens
                   : const EdgeInsets.fromLTRB(
-                      25, 50, 25, 25), // Default margins for smaller screens
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-              ),
+                      35, 50, 35, 25), // Smaller screens
               child: TextFormField(
-                autofocus: true,
-                maxLines: MediaQuery.of(context).size.width > 600
-                    ? 5
-                    : 3, // Adjusted max lines based on screen width
+                maxLines: MediaQuery.of(context).size.width > 600 ? 5 : 3,
                 decoration: InputDecoration(
-                  labelText: 'About',
-                  labelStyle: const TextStyle(
-                    fontFamily: 'Raleway',
-                    letterSpacing: 0,
-                  ),
+                  hintText:
+                      'About', // Changed from labelText to hintText for placeholder
                   hintStyle: const TextStyle(
-                    fontFamily: 'Raleway',
-                    letterSpacing: 0,
-                  ),
+                      fontFamily: 'Raleway',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: Color.fromARGB(121, 121, 121,
+                          121) // Increased text size for the placeholder
+                      ),
                   enabledBorder: OutlineInputBorder(
                     borderSide: const BorderSide(
-                      color: Color.fromARGB(255, 3, 3, 3),
-                      width: 2,
+                      color: Color.fromARGB(255, 66, 62, 62),
+                      width: 1,
                     ),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderSide: const BorderSide(
-                      color: Color.fromARGB(255, 3, 3, 3),
-                      width: 2,
+                      color: Color.fromARGB(255, 66, 62, 62),
+                      width: 1,
                     ),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   errorBorder: OutlineInputBorder(
                     borderSide: const BorderSide(
                       color: Colors.red,
-                      width: 2,
+                      width: 1,
                     ),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   focusedErrorBorder: OutlineInputBorder(
                     borderSide: const BorderSide(
                       color: Colors.red,
-                      width: 2,
+                      width: 1,
                     ),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 style: const TextStyle(
-                  fontFamily: 'Raleway',
-                  letterSpacing: 0,
-                  fontWeight: FontWeight.normal,
-                ),
+                    fontFamily: 'Raleway',
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
+                    color:
+                        Colors.black // Increased text size for the input text
+                    ),
               ),
             ),
           ),
           Align(
-            alignment: const AlignmentDirectional(0, 0.25),
+            alignment: const AlignmentDirectional(0, 0.20),
             child: SizedBox(
               width: MediaQuery.of(context).size.width *
                   0.8, // 80% of screen width
@@ -191,17 +190,10 @@ class _SupportPageState extends State<SupportPage> {
                 ),
                 child: Ink(
                   decoration: BoxDecoration(
+                    // Solid white color
                     border: Border.all(
                       color: const Color.fromARGB(255, 9, 84, 94),
                       width: 2.0,
-                    ),
-                    gradient: const LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        Color.fromARGB(255, 255, 255, 255), // Start color
-                        Color.fromARGB(255, 255, 255, 255), // End color
-                      ],
                     ),
                     borderRadius:
                         BorderRadius.circular(1000), // Rounded corners
@@ -224,7 +216,7 @@ class _SupportPageState extends State<SupportPage> {
             ),
           ),
           Align(
-            alignment: const AlignmentDirectional(0, 0.44),
+            alignment: const AlignmentDirectional(0, 0.35),
             child: Divider(
               height: 0,
               thickness: 2,
@@ -236,7 +228,7 @@ class _SupportPageState extends State<SupportPage> {
             ),
           ),
           Align(
-            alignment: const AlignmentDirectional(0, 0.44),
+            alignment: const AlignmentDirectional(0, 0.35),
             child: Divider(
               height: 0,
               thickness: 2,
@@ -253,7 +245,7 @@ class _SupportPageState extends State<SupportPage> {
                 ? const AlignmentDirectional(
                     0, 0.5) // Adjusted alignment for larger screens
                 : const AlignmentDirectional(
-                    0, 0.44), // Default alignment for smaller screens
+                    0, 0.35), // Default alignment for smaller screens
             child: Text(
               'OR',
               style: TextStyle(
@@ -267,7 +259,7 @@ class _SupportPageState extends State<SupportPage> {
             ),
           ),
           Align(
-            alignment: const AlignmentDirectional(0, 0.70),
+            alignment: const AlignmentDirectional(0, 0.55),
             child: SizedBox(
               width: MediaQuery.of(context).size.width *
                   0.8, // 80% of screen width
@@ -289,14 +281,6 @@ class _SupportPageState extends State<SupportPage> {
                     border: Border.all(
                       color: const Color.fromARGB(255, 9, 84, 94),
                       width: 2.0,
-                    ),
-                    gradient: const LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        Color.fromARGB(255, 255, 255, 255), // Start color
-                        Color.fromARGB(255, 255, 255, 255), // End color
-                      ],
                     ),
                     borderRadius: BorderRadius.circular(
                         1000), // Extremely rounded corners

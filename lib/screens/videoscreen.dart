@@ -21,6 +21,16 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         setState(() {});
         _controller.play();
       });
+
+    // Add listener to detect when video finishes
+    _controller.addListener(() {
+      if (_controller.value.position == _controller.value.duration) {
+        // Delay for 2 seconds before navigating back
+        Future.delayed(Duration(seconds: 1), () {
+          Navigator.pop(context); // Navigate back after 2 seconds
+        });
+      }
+    });
   }
 
   @override
@@ -32,7 +42,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black.withOpacity(0.7),
+      backgroundColor:
+          const Color.fromARGB(255, 255, 255, 255).withOpacity(0.7),
       body: Center(
         child: _controller.value.isInitialized
             ? AspectRatio(

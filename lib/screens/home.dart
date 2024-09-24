@@ -51,7 +51,6 @@ class _MyHomeState extends State<MyHome> {
     super.initState();
     fetchScreenData(widget.sessionId, widget.vehicleId);
 
-    // Set up a timer to refresh the data every 5 seconds
     _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
       fetchScreenData(widget.sessionId, widget.vehicleId);
     });
@@ -86,18 +85,14 @@ class _MyHomeState extends State<MyHome> {
   }
 
   void checkBluetoothConnection() async {
-    // Get the list of connected devices asynchronously
     List<BluetoothDevice> devices = await FlutterBluePlus.connectedDevices;
 
     setState(() {
-      // Update the Bluetooth connection status based on connected devices
       isBluetoothConnected = devices.isNotEmpty;
     });
 
-    // Listen for scan results and handle them
     FlutterBluePlus.scanResults.listen((scanResults) {
       setState(() {
-        // Update the Bluetooth connection status based on scan results
         isBluetoothConnected = scanResults.isNotEmpty;
       });
     });
@@ -109,11 +104,11 @@ class _MyHomeState extends State<MyHome> {
         Uri.parse(
             'http://34.93.202.185:5000/api/v1/get_vehicle_dashboard?vehicle_id=$vehicleId&session=$sessionId'),
       );
-      print('Response Body: ${response.body}'); // Debugging statement
+      print('Response Body: ${response.body}');
       if (response.statusCode == 200) {
         setState(() {
           screenData = json.decode(response.body);
-          lastSyncTime = DateTime.now(); // Update last sync time
+          lastSyncTime = DateTime.now();
           isLoading = false;
         });
       } else {
@@ -143,7 +138,7 @@ class _MyHomeState extends State<MyHome> {
 
   @override
   void dispose() {
-    _timer.cancel(); // Cancel the timer when the page is disposed
+    _timer.cancel();
     super.dispose();
   }
 
@@ -151,12 +146,10 @@ class _MyHomeState extends State<MyHome> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    // Get the arguments from the route
     final bool isCharging = screenData != null &&
         screenData?['data'] != null &&
         screenData?['data'][0]['battery_charge_status'] == 'charging';
 
-    // Extract and decode the profile photo
     Uint8List? profileImage;
     if (screenData != null &&
         screenData!['data'] != null &&
@@ -269,140 +262,151 @@ class _MyHomeState extends State<MyHome> {
                   ),
                 ),
                 Align(
-                  alignment: const AlignmentDirectional(-0.8, 0),
-                  child: Transform.rotate(
-                    angle: 45 * (pi / 180),
-                    child: Container(
-                      width: size * 0.86,
-                      height: size * 0.86,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          transform: GradientRotation(86.62 * (pi / 90)),
-                          stops: [0.2505, 0.7943, 1.2565, 1.658],
-                          colors: [
-                            Color(0xFF09545E),
-                            Color(0xFF0C7785),
-                            Color.fromRGBO(9, 84, 94, 0.517708),
-                            Colors.transparent,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(size * 0.26),
-                      ),
-                      child: Center(
-                        child: Transform.rotate(
-                          angle: -90 * (pi / 180),
-                          child: Container(
-                            width: size * 0.715,
-                            height: size * 0.715,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(size * 0.15),
+                    alignment: const AlignmentDirectional(-1.15, 0),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
+                      child: Transform.rotate(
+                        angle: 45 * (pi / 180),
+                        child: Container(
+                          width: size * 0.86,
+                          height: size * 0.86,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              transform: GradientRotation(86.62 * (pi / 90)),
+                              stops: [0.2505, 0.7943, 1.2565, 1.658],
+                              colors: [
+                                Color(0xFF09545E),
+                                Color(0xFF0C7785),
+                                Color.fromRGBO(9, 84, 94, 0.517708),
+                                Colors.transparent,
+                              ],
                             ),
-                            child: Center(
-                              child: Transform.rotate(
-                                angle: 90 * (pi / 180),
-                                child: Container(
-                                  width: size * 0.56,
-                                  height: size * 0.56,
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      begin: Alignment.centerLeft,
-                                      end: Alignment.centerRight,
-                                      transform:
-                                          GradientRotation(-135 * (pi / 180)),
-                                      stops: [0.1376, 0.5174, 0.8403, 1.1206],
-                                      colors: [
-                                        Color(0xFF09545E),
-                                        Color(0xFF0C7785),
-                                        Color(0x8409545E),
-                                        Color(0x8409545E),
-                                      ],
-                                    ),
-                                    borderRadius:
-                                        BorderRadius.circular(size * 0.125),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(
-                                            0.5), // Adjust opacity as needed
-                                        offset: const Offset(5,
-                                            5), // Shadow is shifted downwards
-                                        blurRadius:
-                                            8, // Increase blur radius for more spread
-                                        spreadRadius:
-                                            0, // Shadow size, set to 0 to keep shadow close to the container
+                            borderRadius: BorderRadius.circular(size * 0.26),
+                          ),
+                          child: Center(
+                            child: Transform.rotate(
+                              angle: -90 * (pi / 180),
+                              child: Container(
+                                width: size * 0.715,
+                                height: size * 0.715,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius:
+                                      BorderRadius.circular(size * 0.15),
+                                ),
+                                child: Center(
+                                  child: Transform.rotate(
+                                    angle: 90 * (pi / 180),
+                                    child: Container(
+                                      width: size * 0.56,
+                                      height: size * 0.56,
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          begin: Alignment.centerLeft,
+                                          end: Alignment.centerRight,
+                                          transform: GradientRotation(
+                                              -135 * (pi / 180)),
+                                          stops: [
+                                            0.1376,
+                                            0.5174,
+                                            0.8403,
+                                            1.1206
+                                          ],
+                                          colors: [
+                                            Color(0xFF09545E),
+                                            Color(0xFF0C7785),
+                                            Color(0x8409545E),
+                                            Color(0x8409545E),
+                                          ],
+                                        ),
+                                        borderRadius:
+                                            BorderRadius.circular(size * 0.125),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(
+                                                0.5), // Adjust opacity as needed
+                                            offset: const Offset(5,
+                                                5), // Shadow is shifted downwards
+                                            blurRadius:
+                                                8, // Increase blur radius for more spread
+                                            spreadRadius:
+                                                0, // Shadow size, set to 0 to keep shadow close to the container
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: Transform.rotate(
-                                      angle: 180 * (pi / 103),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Row(
+                                      child: Center(
+                                        child: Transform.rotate(
+                                          angle: 180 * (pi / 103),
+                                          child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Builder(
-                                                builder: (context) {
-                                                  double screenWidth =
-                                                      MediaQuery.of(context)
-                                                          .size
-                                                          .width;
-                                                  double baseFontSize = 29;
-                                                  double scaledFontSize =
-                                                      baseFontSize *
-                                                          (screenWidth / 500);
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Builder(
+                                                    builder: (context) {
+                                                      double screenWidth =
+                                                          MediaQuery.of(context)
+                                                              .size
+                                                              .width;
+                                                      double baseFontSize = 29;
+                                                      double scaledFontSize =
+                                                          baseFontSize *
+                                                              (screenWidth /
+                                                                  500);
 
-                                                  return Text(
-                                                    screenData != null &&
-                                                            screenData![
-                                                                    'data'] !=
-                                                                null
-                                                        ? '${screenData!['data'][0]['battery_percentage']}'
-                                                        : 'N/A',
+                                                      return Text(
+                                                        screenData != null &&
+                                                                screenData![
+                                                                        'data'] !=
+                                                                    null
+                                                            ? '${screenData!['data'][0]['battery_percentage']}'
+                                                            : 'N/A',
+                                                        style: TextStyle(
+                                                          fontSize:
+                                                              scaledFontSize,
+                                                          fontWeight:
+                                                              FontWeight.w400,
+                                                          fontFamily:
+                                                              'Ethnocentric',
+                                                          color: const Color
+                                                              .fromARGB(255,
+                                                              255, 255, 255),
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                    '%',
                                                     style: TextStyle(
-                                                      fontSize: scaledFontSize,
-                                                      fontWeight:
-                                                          FontWeight.w400,
                                                       fontFamily:
                                                           'Ethnocentric',
-                                                      color:
-                                                          const Color.fromARGB(
-                                                              255,
-                                                              255,
-                                                              255,
-                                                              255),
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                      fontSize: 14,
+                                                      color: Color.fromARGB(
+                                                          255, 255, 255, 255),
                                                     ),
-                                                  );
-                                                },
+                                                  ),
+                                                ],
                                               ),
-                                              const Text(
-                                                '%',
-                                                style: TextStyle(
-                                                  fontFamily: 'Ethnocentric',
+                                              Text(
+                                                isCharging
+                                                    ? 'Charging'
+                                                    : 'Battery', // Show 'Charging' when charging, otherwise show 'Battery'
+                                                style: const TextStyle(
+                                                  fontFamily: 'Prompt',
                                                   fontWeight: FontWeight.w400,
-                                                  fontSize: 14,
+                                                  fontSize: 13,
                                                   color: Color.fromARGB(
                                                       255, 255, 255, 255),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                          Text(
-                                            isCharging
-                                                ? 'Charging'
-                                                : 'Battery', // Show 'Charging' when charging, otherwise show 'Battery'
-                                            style: const TextStyle(
-                                              fontFamily: 'Prompt',
-                                              fontWeight: FontWeight.w400,
-                                              fontSize: 13,
-                                              color: Color.fromARGB(
-                                                  255, 255, 255, 255),
-                                            ),
-                                          ),
-                                        ],
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -412,9 +416,7 @@ class _MyHomeState extends State<MyHome> {
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                ),
+                    )),
                 Align(
                   alignment: const AlignmentDirectional(-1.39, 0.0),
                   child: Padding(
@@ -696,7 +698,7 @@ class _MyHomeState extends State<MyHome> {
                 ),
                 Padding(
                   padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.height * 0.62,
+                    top: MediaQuery.of(context).size.height * 0.63,
                     left: MediaQuery.of(context).size.width * 0.05,
                   ),
                   child: GestureDetector(
@@ -741,7 +743,7 @@ class _MyHomeState extends State<MyHome> {
                 ),
                 Padding(
                   padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.height * 0.715,
+                    top: MediaQuery.of(context).size.height * 0.725,
                     left: MediaQuery.of(context).size.width * 0.05,
                   ),
                   child: GestureDetector(
@@ -800,7 +802,7 @@ class _MyHomeState extends State<MyHome> {
                 ),
                 Padding(
                   padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.height * 0.81,
+                    top: MediaQuery.of(context).size.height * 0.82,
                     left: MediaQuery.of(context).size.width * 0.08,
                   ),
                   child: GestureDetector(
@@ -940,8 +942,9 @@ class _MyHomeState extends State<MyHome> {
           title: const Row(
             children: [
               SizedBox(
-                  width:
-                      10), // Adjust this width to increase the space between image and title
+                width: 10,
+                height: 50,
+              ), // Adjust this width to increase the space between image and title
               Expanded(
                 child: Text(
                   'Profile',
@@ -977,7 +980,10 @@ class _MyHomeState extends State<MyHome> {
           ),
           title: const Row(
             children: [
-              SizedBox(width: 10), // Adjust this width to control spacing
+              SizedBox(
+                width: 10,
+                height: 50,
+              ), // Adjust this width to control spacing
               Expanded(
                 child: Text(
                   'Services',
@@ -1046,7 +1052,10 @@ class _MyHomeState extends State<MyHome> {
           ),
           title: const Row(
             children: [
-              SizedBox(width: 10), // Adjust this width to control spacing
+              SizedBox(
+                width: 10,
+                height: 50,
+              ), // Adjust this width to control spacing
               Expanded(
                 child: Text(
                   'Bike Details',
@@ -1083,7 +1092,10 @@ class _MyHomeState extends State<MyHome> {
           ),
           title: const Row(
             children: [
-              SizedBox(width: 10), // Adjust this width to control spacing
+              SizedBox(
+                width: 10,
+                height: 50,
+              ), // Adjust this width to control spacing
               Expanded(
                 child: Text(
                   'Support',
@@ -1159,11 +1171,11 @@ class _AnimatedSquareWaveState extends State<AnimatedSquareWave>
   @override
   Widget build(BuildContext context) {
     if (!widget.isCharging) {
-      return const SizedBox.shrink(); // Hide the widget if not charging
+      return const SizedBox.shrink();
     }
 
     return Align(
-      alignment: const AlignmentDirectional(-1.1, 0),
+      alignment: const AlignmentDirectional(-1.6, 0),
       child: SizedBox(
         width: MediaQuery.of(context).size.width * 0.5,
         height: MediaQuery.of(context).size.width * 0.5,
@@ -1191,7 +1203,7 @@ class _AnimatedSquareWaveState extends State<AnimatedSquareWave>
 
 class SquareWavePainter extends CustomPainter {
   final double animationValue;
-  final double controllerValue; // Use controller value to control timing
+  final double controllerValue;
 
   SquareWavePainter(this.animationValue, this.controllerValue);
 
@@ -1202,19 +1214,16 @@ class SquareWavePainter extends CustomPainter {
 
     final maxDimension = size.width;
     final center = Offset(size.width / 2, size.height / 2);
-    final angle = 45 * pi / 180; // 45 degrees in radians
+    final angle = 45 * pi / 180;
 
-    canvas.save(); // Save the current state of the canvas
-    canvas.translate(
-        center.dx, center.dy); // Move the origin to the center of the canvas
-    canvas.rotate(angle); // Rotate the canvas by 45 degrees
-    canvas.translate(
-        -center.dx, -center.dy); // Move the origin back to the top-left corner
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(angle);
+    canvas.translate(-center.dx, -center.dy);
 
     const squaresCount = 7;
 
     for (int i = 2; i < squaresCount; i++) {
-      // Slow down animation by reducing frequency
       final timeBasedValue =
           (controllerValue * 0.5 * 2 * pi + i * pi / 2) % (2 * pi);
       final dimension = maxDimension *
@@ -1222,7 +1231,7 @@ class SquareWavePainter extends CustomPainter {
           (1 - i / squaresCount);
       final offset = (maxDimension - dimension) / 2;
       final rect = Rect.fromLTWH(offset, offset, dimension, dimension);
-      final radius = 15.0; // Adjust the radius of the corners
+      final radius = 15.0;
 
       canvas.drawRRect(
         RRect.fromRectAndRadius(rect, Radius.circular(radius)),
@@ -1230,7 +1239,7 @@ class SquareWavePainter extends CustomPainter {
       );
     }
 
-    canvas.restore(); // Restore the saved state of the canvas
+    canvas.restore();
   }
 
   @override

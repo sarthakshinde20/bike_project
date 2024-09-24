@@ -265,7 +265,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         children: [
           Positioned(
             top: screenHeight * 0.022,
-            left: screenWidth * 0.01,
+            right: screenWidth * 0.21,
             child: ClipRRect(
               child: Image.asset(
                 'assets/images/headline.png',
@@ -311,15 +311,15 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                   Icon(
                     Icons.arrow_back_ios,
                     color: Colors.black,
-                    size: screenWidth * 0.05,
+                    size: screenWidth * 0.07,
                   ),
-                  SizedBox(width: screenWidth * 0.01),
+                  SizedBox(width: screenWidth * 0.005),
                   const Text(
                     'Back',
                     style: TextStyle(
-                      fontFamily: 'Goldman',
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
+                      fontFamily: 'Montserrat',
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
@@ -329,7 +329,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           ),
           Positioned(
             top: screenHeight * 0.34, // Adjust as needed
-            left: screenWidth * 0.09, // Adjust as needed
+            left: screenWidth * 0.07, // Adjust as needed
             right: screenWidth * 0.06, // Adjust as needed
             child: const Text(
               'Verify Your Registration',
@@ -342,44 +342,42 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
             ),
           ),
           Positioned(
-            left: 0.0, // Adjust as needed
-            right: 0.0, // Adjust as needed
-            top: screenHeight * 0.43, // Adjust as needed
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: RichText(
-                text: TextSpan(
-                  children: [
-                    const TextSpan(
-                      text:
-                          'We have sent an One Time Password to your mobile number ',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
-                      ),
+            left: screenWidth * 0.07, // Adjust as needed
+            right: screenWidth * 0.04, // Adjust as needed
+            top: screenHeight * 0.47, // Adjust as needed
+
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  const TextSpan(
+                    text:
+                        'We have sent an One Time Password to your mobile number ',
+                    style: TextStyle(
+                      fontFamily: 'Montserrat-Medium',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black,
                     ),
-                    TextSpan(
-                      text: formattedNumber ?? '',
-                      style: const TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
-                        fontStyle: FontStyle
-                            .italic, // Optional: Italicize the number for emphasis
-                      ),
+                  ),
+                  TextSpan(
+                    text: formattedNumber ?? '',
+                    style: const TextStyle(
+                      fontFamily: 'Poppins-SemiBold',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                      fontStyle: FontStyle
+                          .italic, // Optional: Italicize the number for emphasis
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
           Positioned(
-            left: 16.0,
-            right: 16.0,
-            top: screenHeight * 0.525, // Adjust as needed
+            left: 12.0,
+            right: 12.0,
+            top: screenHeight * 0.540, // Adjust as needed
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Pinput(
@@ -387,42 +385,39 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 length: 6,
                 obscureText: false,
                 defaultPinTheme: PinTheme(
-                  width: 50,
-                  height: 60,
+                  width: 45,
+                  height: 45,
                   textStyle: const TextStyle(
                     fontSize: 20,
                     color: Colors.black,
                   ),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black, width: 1.0),
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 focusedPinTheme: PinTheme(
                   width: 50,
-                  height: 60,
+                  height: 50,
                   textStyle: const TextStyle(
                     fontSize: 20,
                     color: Colors.black,
                   ),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black, width: 1.0),
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 submittedPinTheme: PinTheme(
-                  width: 50,
-                  height: 60,
+                  width: 45,
+                  height: 45,
                   textStyle: const TextStyle(
                     fontSize: 20,
                     color: Colors.black,
                   ),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black, width: 1.0),
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 onCompleted: (pin) async {
@@ -437,8 +432,8 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           ),
           Positioned(
             top: screenHeight * 0.65,
-            left: screenWidth * 0.1,
-            right: screenWidth * 0.22,
+            left: screenWidth * 0.01,
+            right: screenWidth * 0.12,
             child: Center(
               child: GestureDetector(
                 onTap: () {
@@ -456,7 +451,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                         text: "Didn’t received the OTP? ",
                         style: TextStyle(
                           fontSize: 16,
-                          fontFamily: 'Raleway',
+                          fontFamily: 'Montserrat',
                           color: Colors.black, // Style for the initial part
                           fontWeight: FontWeight.w400,
                         ),
@@ -465,9 +460,8 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                         text: "Resend",
                         style: TextStyle(
                           fontSize: 16,
-                          fontFamily: 'Raleway',
-                          color: Color.fromARGB(
-                              255, 0, 0, 0), // Style for the "Resend" part
+                          fontFamily: 'Montserrat-SemiBold',
+                          color: Colors.black,
                           fontWeight: FontWeight.w600,
                           decoration: TextDecoration
                               .underline, // Optional: Underline the text

@@ -120,6 +120,19 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
     }
   }
 
+  Future<void> turnOnLights() async {
+    final response = await http.get(
+      Uri.parse(
+          'http://34.93.202.185:5000/api/v1/vehicle/find_my_vehicle?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}'),
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print('Lights turned on: ${data['message']}');
+    } else {
+      print('Failed to turn on lights');
+    }
+  }
+
   Widget _buildDialogOption(String imagePath, String label,
       VoidCallback onPressed, double deviceWidth) {
     return Container(
@@ -182,15 +195,15 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
                   Icon(
                     Icons.arrow_back_ios,
                     color: Colors.black,
-                    size: screenWidth * 0.05,
+                    size: screenWidth * 0.07,
                   ),
                   SizedBox(width: screenWidth * 0.01),
                   const Text(
                     'Back',
                     style: TextStyle(
-                      fontFamily: 'Goldman',
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
+                      fontFamily: 'Montserrat',
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
@@ -198,6 +211,100 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
               ),
             ),
           ),
+          Positioned(
+            bottom: screenHeight * 0.15,
+            right: screenWidth * 0.02,
+            height: 55,
+            width: 55,
+            child: FloatingActionButton(
+              backgroundColor: Colors.white,
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return Theme(
+                      data: Theme.of(context).copyWith(
+                        dialogBackgroundColor: Colors.white,
+                      ),
+                      child: AlertDialog(
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 20.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  _buildDialogOption(
+                                    'assets/images/horn_light.png',
+                                    'Honk & Turn On Lights',
+                                    () async {
+                                      Navigator.of(context)
+                                          .pop(); // Close the dialog
+                                      await turnOnLights(); // Call the second API
+                                    },
+                                    MediaQuery.of(context).size.width,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const SizedBox(height: 10),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                    child: Container(
+                                      width: 120,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: const Color.fromARGB(
+                                              255, 9, 84, 94),
+                                          width: 2.0,
+                                        ),
+                                        borderRadius: BorderRadius.circular(35),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: const Text(
+                                        "Cancel",
+                                        style: TextStyle(
+                                            color:
+                                                Color.fromARGB(255, 9, 84, 94),
+                                            fontFamily: 'Raleway',
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 16),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+              tooltip: 'Find Bike',
+              child: Image.asset(
+                'assets/images/find.png',
+                color: Colors.black, // Replace with your image path
+                width: 45.0, // Set the desired width
+                height: 45.0, // Set the desired height
+              ),
+            ),
+          )
         ],
       ),
     );

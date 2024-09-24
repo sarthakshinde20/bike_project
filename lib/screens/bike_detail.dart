@@ -164,72 +164,72 @@ class BikeDetailsPage extends StatelessWidget {
             ),
           ),
           const Align(
-            alignment: AlignmentDirectional(-0.65, 0.3),
+            alignment: AlignmentDirectional(-0.75, 0.3),
             child: Text(
               'Model number',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
                 fontFamily: 'Montserrat',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
           ),
           Align(
-            alignment: AlignmentDirectional(0.68, 0.3),
+            alignment: AlignmentDirectional(0.75, 0.3),
             child: Text(
               motorNumberDashboardData,
               style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
                 fontFamily: 'Montserrat',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
           ),
           const Align(
-            alignment: AlignmentDirectional(-0.68, 0.4),
+            alignment: AlignmentDirectional(-0.77, 0.4),
             child: Text(
               'Vin number',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
                 fontFamily: 'Montserrat',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
           ),
           Align(
-            alignment: AlignmentDirectional(0.68, 0.4),
+            alignment: AlignmentDirectional(0.75, 0.4),
             child: Text(
               vinNumberDashboardData,
               style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
                 fontFamily: 'Montserrat',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
           ),
           const Align(
-            alignment: AlignmentDirectional(-0.7, 0.5),
+            alignment: AlignmentDirectional(-0.8, 0.5),
             child: Text(
               'Motor no',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
                 fontFamily: 'Montserrat',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
           ),
           Align(
-            alignment: AlignmentDirectional(0.7, 0.5),
+            alignment: AlignmentDirectional(0.75, 0.5),
             child: Text(
               vehicleIdDashboardData,
               style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
                 fontFamily: 'Montserrat',
                 color: Color.fromARGB(255, 0, 0, 0),
               ),

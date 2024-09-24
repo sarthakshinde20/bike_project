@@ -241,18 +241,12 @@ class MapScreenState extends State<MapScreen> {
 
         return AlertDialog(
           backgroundColor: Colors.white,
-          title: const Text(
-            'Added to Favorites',
-            style: TextStyle(
-              fontFamily: 'Montserrat',
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
           content: Text(
-            _favoritePlaces.contains(place)
-                ? '$place is already in your favorites!'
-                : '$place has been added to your favorites!',
+            place.isEmpty
+                ? 'Please select a place to add to your favorites!'
+                : _favoritePlaces.contains(place)
+                    ? '$place is already in your favorites!'
+                    : 'Location was added to favorite list',
             style: const TextStyle(
               fontFamily: 'Montserrat',
               fontWeight: FontWeight.w500,
@@ -264,74 +258,102 @@ class MapScreenState extends State<MapScreen> {
     );
   }
 
-  // Show dialog with favorite places
   void _showFavoritePlacesDialog() {
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          title: const Text(
-            'Favorite Places',
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Montserrat',
-                fontSize: 18),
-            textAlign: TextAlign.start,
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _favoritePlaces.isNotEmpty
+                  ? SizedBox(
+                      height: 200, // Set a specific height for the list
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _favoritePlaces.length > 5
+                            ? 5
+                            : _favoritePlaces.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            color: Colors.white,
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              title: Text(
+                                _favoritePlaces[index],
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width:
+                                        40, // Adjusted width for matching icon size
+                                    height:
+                                        40, // Adjusted height for matching icon size
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.blue,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: IconButton(
+                                      icon: const Icon(Icons.near_me,
+                                          color: Colors.blue),
+                                      iconSize: 25,
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        _setDestination(_favoritePlaces[index]);
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    width:
+                                        40, // Adjusted width for matching icon size
+                                    height:
+                                        40, // Adjusted height for matching icon size
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.red,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: IconButton(
+                                      icon: const Icon(Icons.delete_outlined,
+                                          color: Colors.red),
+                                      iconSize: 20,
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        _removeFavoritePlace(
+                                            _favoritePlaces[index]);
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : const Text(
+                      'No favorite places added yet.',
+                      style: TextStyle(
+                          color: Color.fromARGB(255, 0, 0, 0),
+                          fontFamily: 'Montserrat'),
+                    ),
+            ],
           ),
-          content: _favoritePlaces.isNotEmpty
-              ? Container(
-                  width: double.maxFinite,
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount:
-                        _favoritePlaces.length > 5 ? 5 : _favoritePlaces.length,
-                    itemBuilder: (context, index) {
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          title: Text(
-                            _favoritePlaces[index],
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.remove_circle_outline,
-                                color: Colors.red),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              _removeFavoritePlace(_favoritePlaces[index]);
-                            },
-                          ),
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            _setDestination(_favoritePlaces[index]);
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                )
-              : const Text('No favorite places added yet.',
-                  style: TextStyle(
-                      color: Color.fromARGB(255, 0, 0, 0),
-                      fontFamily: 'Montserrat')),
-          actions: [
-            TextButton(
-              child: const Text(
-                'Close',
-                style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w600),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
         );
       },
     );
@@ -376,15 +398,15 @@ class MapScreenState extends State<MapScreen> {
                   Icon(
                     Icons.arrow_back_ios,
                     color: Colors.black,
-                    size: screenWidth * 0.05,
+                    size: screenWidth * 0.07,
                   ),
                   SizedBox(width: screenWidth * 0.01),
-                  Text(
+                  const Text(
                     'Back',
                     style: TextStyle(
-                      fontFamily: 'Goldman',
-                      fontSize: screenWidth * 0.045,
-                      fontWeight: FontWeight.w700,
+                      fontFamily: 'Montserrat',
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
@@ -393,21 +415,23 @@ class MapScreenState extends State<MapScreen> {
             ),
           ),
           Positioned(
-            bottom: screenHeight * 0.25,
+            bottom: screenHeight * 0.32,
             right: screenWidth * 0.03,
-            child: IconButton(
-              icon: Icon(
-                Icons.bookmark,
-                color: Colors.black,
-                size: screenWidth * 0.1,
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white, // White background color
+                shape: BoxShape.circle, // To make it circular
               ),
-              onPressed: () {
-                if (_destinationController.text.isNotEmpty) {
-                  _addFavoritePlace(_destinationController.text);
-                } else {
+              child: IconButton(
+                icon: Icon(
+                  Icons.favorite_border,
+                  color: Colors.red,
+                  size: screenWidth * 0.08,
+                ),
+                onPressed: () {
                   _showFavoritePlacesDialog();
-                }
-              },
+                },
+              ),
             ),
           ),
           Positioned(
@@ -416,7 +440,7 @@ class MapScreenState extends State<MapScreen> {
             right: 0,
             child: Container(
               width: double.infinity,
-              height: 200,
+              height: 230,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: const BorderRadius.only(
@@ -437,80 +461,93 @@ class MapScreenState extends State<MapScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  TypeAheadFormField<String>(
-                    textFieldConfiguration: TextFieldConfiguration(
-                      controller: _destinationController,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                          borderSide: BorderSide(
-                            color: Colors.grey.shade400,
-                            width: 1.0,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14.0, vertical: 30),
+                    child: TypeAheadFormField<String>(
+                      textFieldConfiguration: TextFieldConfiguration(
+                        controller: _destinationController,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                            borderSide: BorderSide(
+                              color: Colors.grey.shade400,
+                              width: 1.0,
+                            ),
                           ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14.0),
-                          borderSide: const BorderSide(
-                            color: Color.fromARGB(255, 10, 10, 10),
-                            width: 1.5,
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14.0),
+                            borderSide: const BorderSide(
+                              color: Color.fromARGB(255, 10, 10, 10),
+                              width: 1.5,
+                            ),
                           ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                          borderSide: const BorderSide(
-                            color: Color.fromARGB(255, 10, 10, 10),
-                            width: 2.0,
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                            borderSide: const BorderSide(
+                              color: Color.fromARGB(255, 10, 10, 10),
+                              width: 2.0,
+                            ),
                           ),
-                        ),
-                        hintText: 'Destination',
-                        hintStyle: const TextStyle(
-                          color: Color.fromARGB(255, 160, 160, 160),
+                          hintText: 'Destination',
+                          hintStyle: const TextStyle(
+                            color: Color.fromARGB(255, 160, 160, 160),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 12.0),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.favorite_border,
+                                color: Colors.red),
+                            onPressed: () {
+                              _addFavoritePlace(_destinationController.text);
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                    suggestionsCallback: _getPlaceSuggestions,
-                    itemBuilder: (context, suggestion) {
-                      return Container(
-                        padding: const EdgeInsets.all(12.0),
-                        decoration: const BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(color: Colors.grey),
+                      suggestionsCallback: _getPlaceSuggestions,
+                      itemBuilder: (context, suggestion) {
+                        return Container(
+                          padding: const EdgeInsets.all(12.0),
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: Colors.grey),
+                            ),
                           ),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.location_on, color: Colors.red),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                suggestion,
-                                style: const TextStyle(
-                                  fontSize: 12.0,
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.w500,
+                          child: Row(
+                            children: [
+                              const Icon(Icons.location_on, color: Colors.red),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  suggestion,
+                                  style: const TextStyle(
+                                    fontSize: 12.0,
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                        );
+                      },
+                      onSuggestionSelected: (suggestion) {
+                        _destinationController.text = suggestion;
+                        _setDestination(suggestion);
+                      },
+                      suggestionsBoxDecoration: SuggestionsBoxDecoration(
+                        borderRadius: BorderRadius.circular(12.0),
+                        color: Colors.white,
+                        elevation: 4.0,
+                        constraints: const BoxConstraints(
+                          maxHeight: 400,
                         ),
-                      );
-                    },
-                    onSuggestionSelected: (suggestion) {
-                      _destinationController.text = suggestion;
-                      _setDestination(suggestion);
-                    },
-                    suggestionsBoxDecoration: SuggestionsBoxDecoration(
-                      borderRadius: BorderRadius.circular(12.0),
-                      color: Colors.white,
-                      elevation: 4.0,
-                      constraints: const BoxConstraints(
-                        maxHeight: 400,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 0),
                   ElevatedButton(
                     onPressed: () {
                       if (_destination != null) {

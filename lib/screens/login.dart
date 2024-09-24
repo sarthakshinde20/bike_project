@@ -199,9 +199,9 @@ class _LoginPageState extends State<LoginPage> {
                     'Mobile Number',
                     textAlign: TextAlign.start,
                     style: TextStyle(
-                      fontFamily: 'Montserrat',
+                      fontFamily: 'Montserrat-Medium',
                       fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                       color: Colors.black,
                     ),
                   ),
@@ -235,6 +235,8 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         prefixStyle: const TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w500,
                           color: Colors.black,
                         ),
                       ),

@@ -1,8 +1,8 @@
-import 'package:bike_project/screens/home.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class NotificationPage extends StatefulWidget {
-  const NotificationPage({super.key});
+  const NotificationPage({Key? key}) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
@@ -11,10 +11,40 @@ class NotificationPage extends StatefulWidget {
 
 class _NotificationPageState extends State<NotificationPage> {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  final List<String> _notifications = [];
 
   @override
   void initState() {
     super.initState();
+    _setupFirebaseMessaging();
+  }
+
+  void _setupFirebaseMessaging() {
+    // Request notification permissions
+    _firebaseMessaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    // Get the Firebase token for this device
+    _firebaseMessaging.getToken().then((String? token) {
+      print("Firebase Messaging Token: $token");
+    });
+
+    // Handle when app is in the foreground
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("Received a message in the foreground!");
+
+      if (message.notification != null) {
+        print('Notification title: ${message.notification!.title}');
+        print('Notification body: ${message.notification!.body}');
+        setState(() {
+          // Add notification title to the list
+          _notifications.add(message.notification!.title ?? "No title");
+        });
+      }
+    });
   }
 
   @override
@@ -70,7 +100,7 @@ class _NotificationPageState extends State<NotificationPage> {
           ),
         ),
         Align(
-          alignment: const AlignmentDirectional(0, 0.9),
+          alignment: const AlignmentDirectional(0, 0.95),
           child: GestureDetector(
             onTap: () {
               int count = 0;
@@ -89,6 +119,23 @@ class _NotificationPageState extends State<NotificationPage> {
             ),
           ),
         ),
+        _notifications.isEmpty
+            ? const Center(
+                child: Text(
+                'Your Inbox is Empty',
+                style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18),
+              ))
+            : ListView.builder(
+                itemCount: _notifications.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(_notifications[index]),
+                  );
+                },
+              ),
       ]),
     );
   }

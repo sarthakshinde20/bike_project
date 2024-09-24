@@ -185,29 +185,48 @@ class _UploadPageState extends State<UploadPage> {
           Navigator.of(context).pop();
         });
 
-        return AlertDialog(
-          content: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                height: 75, // Set desired height
-                width: 75, // Set desired width
-                child: image, // Display the image with specified size
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  message,
-                  textAlign: TextAlign.start,
-                  style: const TextStyle(
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20), // Rounded corners
+          ),
+          elevation: 10, // Adds shadow effect
+          backgroundColor: Colors.white, // Custom background color
+          child: Padding(
+            padding: const EdgeInsets.all(
+                16.0), // Adds padding around the dialog content
+            child: Row(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(
+                        12), // Rounded corners for image container
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(
+                        12), // Matches the border radius of container
+                    child: SizedBox(
+                      height: 75, // Set desired height
+                      width: 75, // Set desired width
+                      child: image, // Display the image
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Text(
+                    message,
+                    textAlign: TextAlign.start,
+                    style: const TextStyle(
                       fontFamily: 'Montserrat',
                       fontWeight: FontWeight.w500,
-                      fontSize: 16),
+                      fontSize: 16,
+                      color: Colors.black, // Text color
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          actions: <Widget>[],
         );
       },
     );
@@ -276,15 +295,15 @@ class _UploadPageState extends State<UploadPage> {
                   Icon(
                     Icons.arrow_back_ios,
                     color: Colors.black,
-                    size: screenWidth * 0.05,
+                    size: screenWidth * 0.07,
                   ),
-                  SizedBox(width: screenWidth * 0.02),
+                  SizedBox(width: screenWidth * 0.005),
                   const Text(
                     'Back',
                     style: TextStyle(
-                      fontFamily: 'Goldman',
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
+                      fontFamily: 'Montserrat',
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
@@ -401,13 +420,13 @@ class _UploadPageState extends State<UploadPage> {
               width: MediaQuery.of(context).size.width *
                   0.26, // Adjust based on screen width
               height: MediaQuery.of(context).size.width *
-                  0.28, // Maintain square shape
+                  0.26, // Maintain square shape
               child: GestureDetector(
                 onTap: onPickImage,
                 child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: const Color.fromARGB(255, 43, 214, 28),
+                      color: Color.fromARGB(255, 77, 150, 94),
                       width: 4,
                     ),
                     borderRadius: BorderRadius.circular(12.0),
@@ -418,7 +437,7 @@ class _UploadPageState extends State<UploadPage> {
                           child: Icon(
                             Icons.add,
                             size: 40.0,
-                            color: Color.fromARGB(255, 43, 214, 28),
+                            color: Color.fromARGB(255, 77, 150, 94),
                           ),
                         ),
                 ),

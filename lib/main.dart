@@ -1,15 +1,33 @@
 import 'dart:convert';
-
+import 'dart:io'; // Import to check platform
 import 'package:bike_project/screens/home.dart';
+import 'package:bike_project/screens/notification.dart';
 import 'package:bike_project/screens/otp.dart';
 import 'package:bike_project/screens/splashscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart'; // Import Firebase core
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/login.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  if (Platform.isAndroid) {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyDY28yUcoyaT6_TYbS8xwwVZBpU79_rHFc", // API key
+        appId: "1:936541521610:android:1c59831f7882085f3a5633", // App ID
+        messagingSenderId: "936541521610", // Messaging sender ID
+        projectId: "briskev", // Project ID
+        storageBucket: "briskev.appspot.com", // Storage bucket
+      ),
+    );
+  } else {
+    // For iOS or any other platform
+    await Firebase.initializeApp();
+  }
 
   final prefs = await SharedPreferences.getInstance();
   final sessionId = prefs.getString('sessionId') ?? '';
@@ -25,6 +43,7 @@ void main() async {
   final responseData = responseDataString != null
       ? Map<String, dynamic>.from(await json.decode(responseDataString))
       : null;
+
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
       .then((_) {
     runApp(MyApp(
@@ -69,6 +88,8 @@ class MyApp extends StatelessWidget {
               responseData: responseData,
               name: name,
             ),
+        'notification': (context) =>
+            const NotificationPage(), // Add notification page route
       },
     );
   }

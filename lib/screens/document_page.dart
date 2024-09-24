@@ -143,15 +143,15 @@ class _FetchPageState extends State<FetchPage> {
                   Icon(
                     Icons.arrow_back_ios,
                     color: Colors.black,
-                    size: screenWidth * 0.05,
+                    size: screenWidth * 0.07,
                   ),
-                  SizedBox(width: screenWidth * 0.02),
+                  SizedBox(width: screenWidth * 0.005),
                   const Text(
                     'Back',
                     style: TextStyle(
-                      fontFamily: 'Goldman',
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
+                      fontFamily: 'Montserrat',
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
