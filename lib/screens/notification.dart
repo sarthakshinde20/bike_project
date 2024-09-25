@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class NotificationPage extends StatefulWidget {
   const NotificationPage({Key? key}) : super(key: key);
@@ -120,14 +121,26 @@ class _NotificationPageState extends State<NotificationPage> {
           ),
         ),
         _notifications.isEmpty
-            ? const Center(
-                child: Text(
-                'Your Inbox is Empty',
-                style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18),
-              ))
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/images/emptynote.png', // Replace with your image path
+                      width: 250, // Adjust the width as needed
+                      height: 150, // Adjust the height as needed
+                    ),
+                    Text(
+                      'Your Inbox is Empty',
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
+                ),
+              )
             : ListView.builder(
                 itemCount: _notifications.length,
                 itemBuilder: (context, index) {

@@ -413,7 +413,7 @@ class _UploadPageState extends State<UploadPage> {
             fontWeight: FontWeight.w400,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 9),
         Row(
           children: [
             Container(
@@ -445,19 +445,15 @@ class _UploadPageState extends State<UploadPage> {
             ),
             // Add spacing between image and button
             SizedBox(
-              height: MediaQuery.of(context).size.width *
-                  0.1, // Match the image height
-              child: ElevatedButton(
-                onPressed: onUploadImage,
-                style: ElevatedButton.styleFrom(
-                  shape: const CircleBorder(
-                    side: BorderSide(color: Colors.black, width: 2.0),
-                  ),
-                ),
-                child: const Icon(
-                  Icons.upload,
-                  color: Color.fromARGB(255, 9, 84, 94),
-                  size: 20,
+              width: MediaQuery.of(context).size.width *
+                  0.18, // Match the image height
+              child: GestureDetector(
+                onTap:
+                    onUploadImage, // Set the function to be called on image tap
+                child: Image.asset(
+                  'assets/images/uploadicon.png', // Replace with your image path
+                  width: 30, // Adjust size if necessary
+                  height: 30,
                 ),
               ),
             ),

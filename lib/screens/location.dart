@@ -288,27 +288,21 @@ class MapScreenState extends State<MapScreen> {
                                   horizontal: 16, vertical: 8),
                               title: Text(
                                 _favoritePlaces[index],
-                                style: const TextStyle(fontSize: 14),
+                                style: const TextStyle(
+                                    fontSize: 15,
+                                    fontFamily: 'Montserrat',
+                                    fontWeight: FontWeight.w500),
                               ),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Container(
-                                    width:
-                                        40, // Adjusted width for matching icon size
-                                    height:
-                                        40, // Adjusted height for matching icon size
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.blue,
-                                        width: 1.5,
-                                      ),
-                                    ),
                                     child: IconButton(
-                                      icon: const Icon(Icons.near_me,
-                                          color: Colors.blue),
-                                      iconSize: 25,
+                                      icon: Image.asset(
+                                        'assets/images/directionlogo.png', // Replace with your image path
+                                        width: 30, // Adjust size accordingly
+                                        height: 30,
+                                      ),
                                       onPressed: () {
                                         Navigator.of(context).pop();
                                         _setDestination(_favoritePlaces[index]);
@@ -317,21 +311,12 @@ class MapScreenState extends State<MapScreen> {
                                   ),
                                   const SizedBox(width: 8),
                                   Container(
-                                    width:
-                                        40, // Adjusted width for matching icon size
-                                    height:
-                                        40, // Adjusted height for matching icon size
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.red,
-                                        width: 1.5,
-                                      ),
-                                    ),
                                     child: IconButton(
-                                      icon: const Icon(Icons.delete_outlined,
-                                          color: Colors.red),
-                                      iconSize: 20,
+                                      icon: Image.asset(
+                                        'assets/images/deleteicon.png', // Replace with your image path
+                                        width: 30, // Adjust size accordingly
+                                        height: 30,
+                                      ),
                                       onPressed: () {
                                         Navigator.of(context).pop();
                                         _removeFavoritePlace(
@@ -419,14 +404,14 @@ class MapScreenState extends State<MapScreen> {
             right: screenWidth * 0.03,
             child: Container(
               decoration: const BoxDecoration(
-                color: Colors.white, // White background color
-                shape: BoxShape.circle, // To make it circular
+                color: Colors.white,
+                shape: BoxShape.circle,
               ),
               child: IconButton(
-                icon: Icon(
-                  Icons.favorite_border,
-                  color: Colors.red,
-                  size: screenWidth * 0.08,
+                icon: Image.asset(
+                  'assets/images/locationfavo.png',
+                  width: screenWidth * 0.09,
+                  height: screenWidth * 0.09,
                 ),
                 onPressed: () {
                   _showFavoritePlacesDialog();

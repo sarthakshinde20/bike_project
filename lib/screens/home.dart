@@ -262,7 +262,7 @@ class _MyHomeState extends State<MyHome> {
                   ),
                 ),
                 Align(
-                    alignment: const AlignmentDirectional(-1.15, 0),
+                    alignment: const AlignmentDirectional(-1.15, -0.02),
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
                       child: Transform.rotate(
@@ -323,18 +323,6 @@ class _MyHomeState extends State<MyHome> {
                                         ),
                                         borderRadius:
                                             BorderRadius.circular(size * 0.125),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(
-                                                0.5), // Adjust opacity as needed
-                                            offset: const Offset(5,
-                                                5), // Shadow is shifted downwards
-                                            blurRadius:
-                                                8, // Increase blur radius for more spread
-                                            spreadRadius:
-                                                0, // Shadow size, set to 0 to keep shadow close to the container
-                                          ),
-                                        ],
                                       ),
                                       child: Center(
                                         child: Transform.rotate(
@@ -520,7 +508,7 @@ class _MyHomeState extends State<MyHome> {
                 ),
                 Positioned(
                   top: MediaQuery.of(context).size.height *
-                      0.075, // 10% from the top
+                      0.085, // 10% from the top
                   left: 0,
                   right: MediaQuery.of(context).size.width *
                       0.72, // 65% of screen width
@@ -531,7 +519,7 @@ class _MyHomeState extends State<MyHome> {
                         width: MediaQuery.of(context).size.width *
                             0.4, // 40% of screen width
                         height: MediaQuery.of(context).size.height *
-                            0.05, // 5% of screen height
+                            0.04, // 5% of screen height
                       ),
                     ),
                   ),
@@ -555,7 +543,7 @@ class _MyHomeState extends State<MyHome> {
                 ),
                 Padding(
                   padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.height * 0.16,
+                    top: MediaQuery.of(context).size.height * 0.15,
                     left: MediaQuery.of(context).size.width * 0.08,
                   ),
                   child: GestureDetector(
@@ -572,7 +560,7 @@ class _MyHomeState extends State<MyHome> {
                 ),
                 Padding(
                   padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.height * 0.24,
+                    top: MediaQuery.of(context).size.height * 0.225,
                     left: MediaQuery.of(context).size.width * 0.08,
                   ),
                   child: GestureDetector(
@@ -596,7 +584,7 @@ class _MyHomeState extends State<MyHome> {
                 ),
                 Padding(
                   padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.height * 0.32,
+                    top: MediaQuery.of(context).size.height * 0.305,
                     left: MediaQuery.of(context).size.width * 0.08,
                   ),
                   child: GestureDetector(
@@ -689,7 +677,7 @@ class _MyHomeState extends State<MyHome> {
                       // );
                     },
                     child: Image.asset(
-                      'assets/images/bikefuction.png',
+                      'assets/images/findmybike.png',
                       width: MediaQuery.of(context).size.width * 0.12,
                       height: MediaQuery.of(context).size.width * 0.12,
                       fit: BoxFit.cover,
@@ -1175,7 +1163,7 @@ class _AnimatedSquareWaveState extends State<AnimatedSquareWave>
     }
 
     return Align(
-      alignment: const AlignmentDirectional(-1.6, 0),
+      alignment: const AlignmentDirectional(-1.6, -0.02),
       child: SizedBox(
         width: MediaQuery.of(context).size.width * 0.5,
         height: MediaQuery.of(context).size.width * 0.5,
