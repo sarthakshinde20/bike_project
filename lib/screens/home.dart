@@ -166,75 +166,58 @@ class _MyHomeState extends State<MyHome> {
       },
       child: Scaffold(
         drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              Stack(
-                children: [
-                  Align(
-                    alignment: const AlignmentDirectional(-2, -0.9),
-                    child: ClipRRect(
-                      child: Image.asset(
-                        'assets/images/headline.png',
-                        width: screenWidth * 0.75,
-                        height: screenHeight * 0.3,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(
-                      top: screenHeight * 0.12,
-                      bottom: screenHeight * 0.025,
-                      right: screenWidth * 0.13,
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Padding(
-                        //   padding: EdgeInsets.only(
-                        //     right: screenWidth * 0.0, // 0% of screen width
-                        //   ), // Adjust the padding as needed
-                        //   child: IconButton(
-                        //     icon: const Icon(
-                        //       Icons.arrow_back_ios,
-                        //       color: Color.fromARGB(255, 255, 255, 255),
-                        //       size: 24,
-                        //     ),
-                        //     onPressed: () => Navigator.of(context).pop(),
-                        //   ),
-                        // ),
-                        Text(
-                          'Menu',
-                          style: TextStyle(
-                            fontSize: 34,
-                            fontFamily: 'Goldman',
-                            color: Color.fromARGB(255, 255, 255, 255),
-                            fontWeight: FontWeight.w700,
-                            shadows: [
-                              Shadow(
-                                offset: Offset(3.0, 4.0),
-                                blurRadius: 3.0,
-                                color: Color.fromARGB(119, 0, 0, 0),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+            child: Stack(children: [
+          Align(
+            alignment: const AlignmentDirectional(-1.5, -0.98),
+            child: ClipRRect(
+              child: Image.asset(
+                'assets/images/headline.png',
+                width: screenWidth * 0.75,
+                height: screenHeight * 0.3,
+                fit: BoxFit.contain,
               ),
-              ..._buildListTiles(
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(
+              top: screenHeight * 0.12,
+              right: screenWidth * 0.13,
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Menu',
+                  style: TextStyle(
+                    fontSize: 34,
+                    fontFamily: 'Goldman',
+                    color: Color.fromARGB(255, 255, 255, 255),
+                    fontWeight: FontWeight.w700,
+                    shadows: [
+                      Shadow(
+                        offset: Offset(3.0, 4.0),
+                        blurRadius: 3.0,
+                        color: Color.fromARGB(119, 0, 0, 0),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 200),
+            child: Column(
+              children: _buildListTiles(
                 context,
                 widget.sessionId,
                 widget.vehicleId,
                 widget.dashboardData,
                 widget.responseData,
               ),
-            ],
+            ),
           ),
-        ),
+        ])),
         body: LayoutBuilder(
           builder: (context, constraints) {
             double size = constraints.maxWidth * 0.5;

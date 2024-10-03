@@ -299,7 +299,6 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
               tooltip: 'Find Bike',
               child: Image.asset(
                 'assets/images/find.png',
-                color: Colors.black, // Replace with your image path
                 width: 45.0, // Set the desired width
                 height: 45.0, // Set the desired height
               ),

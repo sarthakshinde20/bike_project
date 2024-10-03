@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:convert';
+import 'package:image/image.dart' as img;
 
 class UploadPage extends StatefulWidget {
   final String sessionId;
@@ -147,6 +148,22 @@ class _UploadPageState extends State<UploadPage> {
           Image.asset('assets/images/error.png'));
       return;
     }
+    // Check file size
+    final fileSize = await imageFile.length();
+    if (fileSize > 512 * 1024) {
+      // 512 KB
+      _showDialog('File size exceeds 512 KB. Please select a smaller file.',
+          Image.asset('assets/images/error.png'));
+      return;
+    }
+
+    // Resize image to 65x25 mm
+    final resizedImage = await _resizeImage(imageFile);
+    if (resizedImage == null) {
+      _showDialog(
+          'Error resizing image.', Image.asset('assets/images/error.png'));
+      return;
+    }
 
     try {
       var request = http.MultipartRequest(
@@ -174,6 +191,29 @@ class _UploadPageState extends State<UploadPage> {
       _showDialog(
           'Error uploading image: $e', Image.asset('assets/images/error.png'));
     }
+  }
+
+  Future<File?> _resizeImage(File imageFile) async {
+    // Read the image file
+    final imageBytes = await imageFile.readAsBytes();
+    img.Image? originalImage = img.decodeImage(imageBytes);
+    if (originalImage == null) return null;
+
+    // Calculate the target size in pixels (assuming 300 DPI)
+    int targetWidth = (120 / 25.4 * 300).round(); // 65 mm to pixels
+    int targetHeight = (15 / 25.4 * 300).round(); // 25 mm to pixels
+
+    // Resize the image
+    img.Image resizedImage =
+        img.copyResize(originalImage, width: targetWidth, height: targetHeight);
+
+    // Save the resized image to a temporary file
+    final tempDir = await Directory.systemTemp.createTemp();
+    final resizedImageFile =
+        File('${tempDir.path}/resized_${imageFile.uri.pathSegments.last}');
+    await resizedImageFile.writeAsBytes(img.encodeJpg(resizedImage));
+
+    return resizedImageFile;
   }
 
   void _showDialog(String message, Widget image) {

@@ -76,6 +76,29 @@ class _FetchPageState extends State<FetchPage> {
     return documentNames[documentType] ?? 'Unknown Document';
   }
 
+  void _showImageInDialog(Uint8List imageData, BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Calculate the target size in pixels (assuming 300 DPI)
+    int targetWidth = (120 / 25.4 * 300).round(); // 65 mm to pixels
+    int targetHeight = (15 / 25.4 * 300).round(); // 25 mm to pixels
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Container(
+            width: targetWidth.toDouble() <= screenWidth
+                ? targetWidth.toDouble()
+                : screenWidth, // Ensure width doesn't exceed screen
+            height: targetHeight.toDouble(),
+            child: Image.memory(imageData, fit: BoxFit.fill),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -189,16 +212,7 @@ class _FetchPageState extends State<FetchPage> {
                                     const EdgeInsets.symmetric(vertical: 8.0),
                                 child: GestureDetector(
                                   onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            FullScreenImagePage(
-                                          imageName: doc['name'],
-                                          imageData: doc['data'],
-                                        ),
-                                      ),
-                                    );
+                                    _showImageInDialog(doc['data'], context);
                                   },
                                   child: Column(
                                     crossAxisAlignment:
@@ -237,38 +251,6 @@ class _FetchPageState extends State<FetchPage> {
                       ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class FullScreenImagePage extends StatelessWidget {
-  final Uint8List imageData;
-  final String imageName;
-
-  FullScreenImagePage({required this.imageData, required this.imageName});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(imageName),
-        backgroundColor: Colors.black,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ],
-      ),
-      body: Center(
-        child: Image.memory(
-          imageData,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) {
-            return const Center(child: Icon(Icons.error));
-          },
-        ),
       ),
     );
   }

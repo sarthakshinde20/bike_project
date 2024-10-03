@@ -204,21 +204,10 @@ class MapScreenState extends State<MapScreen> {
 
     print(
         'destination Location: Latitude: ${location.latitude}, Longitude: ${location.longitude}');
-
     if (response.statusCode == 200) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) =>
-              VideoPlayerScreen(videoPath: 'assets/videos/success.mp4'),
-        ),
-      );
+      showVideoPlayerDialog(context, 'assets/videos/success.mp4');
     } else {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) =>
-              VideoPlayerScreen(videoPath: 'assets/videos/failure.mp4'),
-        ),
-      );
+      showVideoPlayerDialog(context, 'assets/videos/failure.mp4');
     }
   }
 
