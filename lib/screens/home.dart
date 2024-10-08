@@ -168,12 +168,14 @@ class _MyHomeState extends State<MyHome> {
         drawer: Drawer(
             child: Stack(children: [
           Align(
-            alignment: const AlignmentDirectional(-1.5, -0.98),
+            alignment: const AlignmentDirectional(-1.5, -0.99),
             child: ClipRRect(
               child: Image.asset(
                 'assets/images/headline.png',
-                width: screenWidth * 0.75,
-                height: screenHeight * 0.3,
+                width: MediaQuery.of(context).size.width *
+                    0.75, // Use MediaQuery for width
+                height: MediaQuery.of(context).size.height *
+                    0.3, // Use MediaQuery for height
                 fit: BoxFit.contain,
               ),
             ),
@@ -206,7 +208,9 @@ class _MyHomeState extends State<MyHome> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 200),
+            padding: EdgeInsets.only(
+                top: MediaQuery.of(context).size.height *
+                    0.25), // Use MediaQuery for dynamic top padding
             child: Column(
               children: _buildListTiles(
                 context,
@@ -491,7 +495,7 @@ class _MyHomeState extends State<MyHome> {
                 ),
                 Positioned(
                   top: MediaQuery.of(context).size.height *
-                      0.085, // 10% from the top
+                      0.080, // 10% from the top
                   left: 0,
                   right: MediaQuery.of(context).size.width *
                       0.72, // 65% of screen width
@@ -670,7 +674,7 @@ class _MyHomeState extends State<MyHome> {
                 Padding(
                   padding: EdgeInsets.only(
                     top: MediaQuery.of(context).size.height * 0.63,
-                    left: MediaQuery.of(context).size.width * 0.05,
+                    left: MediaQuery.of(context).size.width * 0.035,
                   ),
                   child: GestureDetector(
                     onTap: () {},
@@ -715,7 +719,7 @@ class _MyHomeState extends State<MyHome> {
                 Padding(
                   padding: EdgeInsets.only(
                     top: MediaQuery.of(context).size.height * 0.725,
-                    left: MediaQuery.of(context).size.width * 0.05,
+                    left: MediaQuery.of(context).size.width * 0.035,
                   ),
                   child: GestureDetector(
                     onTap: () {},

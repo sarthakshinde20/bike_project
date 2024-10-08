@@ -448,7 +448,7 @@ class _ProfilePageState extends State<ProfilePage> {
               top: MediaQuery.of(context).size.height *
                   0.38, // Adjust based on screen height
               left: MediaQuery.of(context).size.width *
-                  0.07, // Adjust based on screen width
+                  0.32, // Adjust based on screen width
               right: MediaQuery.of(context).size.width *
                   0.1, // Adjust right padding if needed
               child: Text(
@@ -460,7 +460,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   fontFamily: 'Montserrat',
                 ),
                 textAlign:
-                    TextAlign.center, // Optional: center the text horizontally
+                    TextAlign.start, // Optional: center the text horizontally
               ),
             ),
             Positioned(
