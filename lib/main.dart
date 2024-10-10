@@ -1,21 +1,29 @@
 import 'dart:convert';
-import 'dart:io'; // Import to check platform
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:bike_project/screens/home.dart';
 import 'package:bike_project/screens/notification.dart';
 import 'package:bike_project/screens/otp.dart';
 import 'package:bike_project/screens/splashscreen.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:firebase_core/firebase_core.dart'; // Import Firebase core
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_messaging/firebase_messaging.dart'; // Import Firebase Messaging
 import 'screens/login.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 // Background message handler function
 Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
   print('Handling a background message: ${message.messageId}');
-  // Add any custom logic here for handling the notification data
+  await storeNotification(message); // Store the notification data
+}
+
+Future<void> storeNotification(RemoteMessage message) async {
+  final prefs = await SharedPreferences.getInstance();
+  List<String> notifications = prefs.getStringList('notifications') ?? [];
+
+  // Add the new notification to the list
+  notifications.add(json.encode(message.data)); // Store notification data
+  await prefs.setStringList('notifications', notifications); // Save it back
 }
 
 void main() async {
@@ -60,6 +68,7 @@ void main() async {
       responseData: responseData,
     ));
   });
+
   // Subscribe to vehicle topic for notifications
   FirebaseMessaging.instance.subscribeToTopic(vehicleId).then((_) {
     print('Subscribed to $vehicleId topic');
@@ -101,7 +110,7 @@ class MyApp extends StatelessWidget {
               name: name,
             ),
         'notification': (context) =>
-            const NotificationPage(), // Add notification page route
+            const NotificationPage(), // Notification page route
       },
     );
   }
@@ -109,11 +118,9 @@ class MyApp extends StatelessWidget {
 
 class MyFirebaseMessagingService {
   static Future<void> setupFirebaseMessaging() async {
-    // FlutterLocalNotificationsPlugin instance
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
         FlutterLocalNotificationsPlugin();
 
-    // Android settings for notifications
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
@@ -122,7 +129,6 @@ class MyFirebaseMessagingService {
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
-    // Notification channel settings
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'my_channel_id', // Unique channel ID
       'My Notifications', // Channel name
@@ -130,13 +136,11 @@ class MyFirebaseMessagingService {
       importance: Importance.high,
     );
 
-    // Create the notification channel on the device
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
 
-    // Request notification permissions
     await FirebaseMessaging.instance.requestPermission();
 
     // Handle foreground messages
@@ -157,6 +161,12 @@ class MyFirebaseMessagingService {
           ),
         );
       }
+    });
+
+    // Handle background and closed state notifications
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('Notification clicked while app was in background or closed.');
+      storeNotification(message);
     });
   }
 }
