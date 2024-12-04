@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert'; // To convert List to String and vice-versa
-import 'package:intl/intl.dart';
+import 'dart:async';
+import 'dart:convert';
 
 class NotificationPage extends StatefulWidget {
-  const NotificationPage({Key? key, String? title, String? body})
-      : super(key: key);
+  const NotificationPage({Key? key}) : super(key: key);
 
   @override
   _NotificationPageState createState() => _NotificationPageState();
@@ -15,12 +14,13 @@ class NotificationPage extends StatefulWidget {
 class _NotificationPageState extends State<NotificationPage> {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final List<Map<String, dynamic>> _notifications = [];
+  late StreamSubscription<RemoteMessage> _messageSubscription;
 
   @override
   void initState() {
     super.initState();
     _setupFirebaseMessaging();
-    _loadNotifications(); // Load stored notifications when the app starts
+    _loadNotifications();
   }
 
   void _setupFirebaseMessaging() {
@@ -34,7 +34,9 @@ class _NotificationPageState extends State<NotificationPage> {
       print("Firebase Messaging Token: $token");
     });
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    // Listen to foreground messages
+    _messageSubscription =
+        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (message.notification != null) {
         String? title = message.notification!.title;
         String? body = message.notification!.body;
@@ -46,14 +48,53 @@ class _NotificationPageState extends State<NotificationPage> {
             "time": DateTime.now().toIso8601String(),
           };
 
-          setState(() {
-            _notifications.add(newNotification);
-          });
+          if (mounted) {
+            setState(() {
+              _notifications.add(newNotification);
+            });
+          }
 
           _saveNotifications();
         }
       }
     });
+
+    // Handle background messages
+    // FirebaseMessaging.onBackgroundMessage(_backgroundMessageHandler);
+  }
+
+  Future<void> _backgroundMessageHandler(RemoteMessage message) async {
+    WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
+
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Get stored notifications, handle decoding in case of an empty or corrupted JSON
+    List<dynamic> storedNotifications;
+    try {
+      final String? notificationsData = prefs.getString('notifications');
+      storedNotifications = notificationsData != null
+          ? jsonDecode(notificationsData) as List<dynamic>
+          : [];
+    } catch (e) {
+      print('Error decoding notifications: $e');
+      storedNotifications = [];
+    }
+
+    // Prepare the new notification with title, body, and current time
+    String? title = message.notification?.title;
+    String? body = message.notification?.body;
+
+    if (title != null && body != null) {
+      final newNotification = {
+        "title": title,
+        "body": body,
+        "time": DateTime.now().toIso8601String(),
+      };
+
+      // Add the new notification to the list and save it back to SharedPreferences
+      storedNotifications.add(newNotification);
+      await prefs.setString('notifications', jsonEncode(storedNotifications));
+    }
   }
 
   // Load notifications from SharedPreferences
@@ -63,11 +104,13 @@ class _NotificationPageState extends State<NotificationPage> {
 
     if (notificationsData != null) {
       List<dynamic> storedNotifications = jsonDecode(notificationsData);
-      setState(() {
-        _notifications.addAll(storedNotifications
-            .map((notification) => Map<String, dynamic>.from(notification))
-            .toList());
-      });
+      if (mounted) {
+        setState(() {
+          _notifications.addAll(storedNotifications
+              .map((notification) => Map<String, dynamic>.from(notification))
+              .toList());
+        });
+      }
     }
   }
 
@@ -77,27 +120,27 @@ class _NotificationPageState extends State<NotificationPage> {
     prefs.setString('notifications', jsonEncode(_notifications));
   }
 
-  // Clear notifications from both the UI and SharedPreferences
+  // Clear notifications
   void _clearAllNotifications() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs
-        .remove('notifications'); // Remove notifications from SharedPreferences
+    await prefs.remove('notifications');
 
-    setState(() {
-      _notifications.clear(); // Clear the notifications list in the state
-    });
+    if (mounted) {
+      setState(() {
+        _notifications.clear();
+      });
+    }
   }
 
-  // Filter notifications received in the last 2 days
+  // Filter recent notifications (within last 2 days)
   List<Map<String, dynamic>> _getRecentNotifications() {
     final now = DateTime.now();
-    return _notifications
-        .where((notification) =>
-            now
-                .difference(DateTime.parse(notification['time'] as String))
-                .inDays <
-            2)
-        .toList();
+    return _notifications.where((notification) {
+      return now
+              .difference(DateTime.parse(notification['time'] as String))
+              .inDays <
+          2;
+    }).toList();
   }
 
   String timeAgo(DateTime dateTime) {
@@ -115,6 +158,12 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 
   @override
+  void dispose() {
+    _messageSubscription.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
@@ -129,8 +178,8 @@ class _NotificationPageState extends State<NotificationPage> {
             child: ClipRRect(
               child: Image.asset(
                 'assets/images/headline.png',
-                width: screenWidth * 0.85, // 85% of screen width
-                height: screenHeight * 0.3, // 30% of screen height
+                width: screenWidth * 0.85,
+                height: screenHeight * 0.3,
                 fit: BoxFit.contain,
               ),
             ),
@@ -138,9 +187,9 @@ class _NotificationPageState extends State<NotificationPage> {
           // Notification Header
           Padding(
             padding: EdgeInsets.only(
-              top: screenHeight * 0.165, // 15% of screen height
-              bottom: screenHeight * 0.020, // 2% of screen height
-              right: screenWidth * 0.25, // 25% of screen width
+              top: screenHeight * 0.165,
+              bottom: screenHeight * 0.020,
+              right: screenWidth * 0.25,
             ),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -177,8 +226,7 @@ class _NotificationPageState extends State<NotificationPage> {
                     fontSize: 16,
                     color: _notifications.isEmpty
                         ? const Color.fromRGBO(95, 95, 95, 1)
-                        : const Color.fromRGBO(
-                            95, 95, 95, 1), // Change color as needed
+                        : const Color.fromRGBO(95, 95, 95, 1),
                     fontWeight: FontWeight.w500,
                     fontFamily: 'Raleway',
                     decoration: TextDecoration.underline,
@@ -191,18 +239,18 @@ class _NotificationPageState extends State<NotificationPage> {
           Padding(
             padding: EdgeInsets.only(
               top: recentNotifications.isEmpty
-                  ? screenHeight * 0.10 // Padding for empty state
-                  : screenHeight * 0.28, // Padding for notifications list
-            ), // Adjust based on image size
+                  ? screenHeight * 0.10
+                  : screenHeight * 0.31,
+            ),
             child: recentNotifications.isEmpty
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Image.asset(
-                          'assets/images/emptynote.png', // Replace with your image path
-                          width: 250, // Adjust the width as needed
-                          height: 150, // Adjust the height as needed
+                          'assets/images/emptynote.png',
+                          width: 250,
+                          height: 150,
                         ),
                         const Text(
                           'Your Inbox is Empty',
@@ -218,7 +266,6 @@ class _NotificationPageState extends State<NotificationPage> {
                 : ListView.builder(
                     itemCount: recentNotifications.length,
                     itemBuilder: (context, index) {
-                      // Reverse the list to show the latest notifications first
                       final notification = recentNotifications[
                           recentNotifications.length - 1 - index];
                       final notificationTime =
@@ -229,7 +276,7 @@ class _NotificationPageState extends State<NotificationPage> {
                             vertical: 8.0, horizontal: 16.0),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: const Color.fromARGB(255, 255, 255, 255),
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(10),
                             boxShadow: const [
                               BoxShadow(
@@ -239,9 +286,8 @@ class _NotificationPageState extends State<NotificationPage> {
                               ),
                             ],
                             border: Border.all(
-                              color: const Color.fromARGB(
-                                  255, 0, 0, 0), // Border color
-                              width: 1, // Border width
+                              color: Colors.black,
+                              width: 1,
                             ),
                           ),
                           child: ListTile(
@@ -254,8 +300,7 @@ class _NotificationPageState extends State<NotificationPage> {
                               ),
                             ),
                             subtitle: Row(
-                              mainAxisAlignment: MainAxisAlignment
-                                  .spaceBetween, // Align items in the row
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Expanded(
                                   child: Column(
@@ -273,8 +318,6 @@ class _NotificationPageState extends State<NotificationPage> {
                                     ],
                                   ),
                                 ),
-                                const SizedBox(
-                                    width: 8), // Spacing between text and icon
                                 Row(
                                   children: [
                                     Text(
@@ -301,17 +344,16 @@ class _NotificationPageState extends State<NotificationPage> {
             alignment: const AlignmentDirectional(0, 0.95),
             child: GestureDetector(
               onTap: () {
-                int count = 0;
-                Navigator.of(context).popUntil((_) => count++ >= 1);
+                Navigator.pop(context);
               },
-              child: SizedBox(
-                width: screenWidth * 0.14,
-                height: screenWidth * 0.14,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: Image.asset(
-                    'assets/images/home.png',
-                    fit: BoxFit.cover,
+              child: ClipOval(
+                child: Container(
+                  color: Colors.blue,
+                  padding: const EdgeInsets.all(15),
+                  child: const Icon(
+                    Icons.home,
+                    color: Colors.white,
+                    size: 30,
                   ),
                 ),
               ),

@@ -18,18 +18,33 @@ Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
 }
 
 Future<void> storeNotification(RemoteMessage message) async {
-  final prefs = await SharedPreferences.getInstance();
-  List<String> notifications = prefs.getStringList('notifications') ?? [];
+  List<Map<String, dynamic>> Listnotifications = [];
+  // print(
+  // 'storeNotification called with message: ${notification}'); // Debug: function call
 
-  // Add the new notification to the list
-  notifications.add(json.encode(message.data)); // Store notification data
-  await prefs.setStringList('notifications', notifications); // Save it back
+  final prefs = await SharedPreferences.getInstance();
+  String? notificationsData = prefs.getString('notifications');
+
+  if (notificationsData != null) {
+    List<dynamic> storedNotifications = jsonDecode(notificationsData);
+    Listnotifications.addAll(storedNotifications
+        .map((notification) => Map<String, dynamic>.from(notification))
+        .toList());
+  }
+  // Combine notification data and payload
+  final NewNotification = {
+    "title": message.notification?.title ?? "No Title",
+    "body": message.notification?.body ?? "No Body",
+    "time": DateTime.now().toIso8601String(),
+  };
+
+  Listnotifications.add(NewNotification);
+
+  prefs.setString('notifications', jsonEncode(Listnotifications));
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Firebase and background message handler
   FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
 
   await Firebase.initializeApp(
@@ -41,6 +56,8 @@ void main() async {
       storageBucket: "briskev.appspot.com",
     ),
   );
+
+  // Initialize Firebase and background message handler
   await MyFirebaseMessagingService.setupFirebaseMessaging();
 
   final prefs = await SharedPreferences.getInstance();
