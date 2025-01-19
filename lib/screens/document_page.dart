@@ -15,7 +15,7 @@ class FetchPage extends StatefulWidget {
 
 class _FetchPageState extends State<FetchPage> {
   List<Map<String, dynamic>> _fetchedDocuments = [];
-  final String apiUrl = 'http://34.93.202.185:5000';
+  final String apiUrl = 'https://api.briskev.com';
   bool _loading = true;
   String _errorMessage = '';
 

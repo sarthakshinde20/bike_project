@@ -102,7 +102,7 @@ class _MyHomeState extends State<MyHome> {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://34.93.202.185:5000/api/v1/get_vehicle_dashboard?vehicle_id=$vehicleId&session=$sessionId'),
+            'https://api.briskev.com/api/v1/get_vehicle_dashboard?vehicle_id=$vehicleId&session=$sessionId'),
       );
       print('Response Body: ${response.body}');
       if (response.statusCode == 200) {
@@ -124,7 +124,7 @@ class _MyHomeState extends State<MyHome> {
         isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No Internet connection')),
+        const SnackBar(content: Text('Loading data')),
       );
     } catch (e) {
       setState(() {

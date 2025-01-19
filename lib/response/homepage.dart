@@ -29,7 +29,7 @@ class _HomePageState extends State<HomePage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://34.93.202.185:5000/logout'),
+        Uri.parse('https://api.briskev.com/logout'),
         headers: <String, String>{
           'Content-Type': 'application/json',
         },

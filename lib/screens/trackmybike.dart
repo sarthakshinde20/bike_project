@@ -42,7 +42,7 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
     // Fetch vehicle location from API
     final response = await http.get(
       Uri.parse(
-          'http://34.93.202.185:5000/api/v1/get_vehicle_dashboard?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}'),
+          'https://api.briskev.com/api/v1/get_vehicle_dashboard?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}'),
     );
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -123,7 +123,7 @@ class _FindMyVehicleState extends State<FindMyVehicle> {
   Future<void> turnOnLights() async {
     final response = await http.get(
       Uri.parse(
-          'http://34.93.202.185:5000/api/v1/vehicle/find_my_vehicle?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}'),
+          'https://api.briskev.com/api/v1/vehicle/find_my_vehicle?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}'),
     );
     if (response.statusCode == 200) {
       final data = json.decode(response.body);

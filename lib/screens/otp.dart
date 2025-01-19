@@ -62,7 +62,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     try {
       final response = await http.post(
         Uri.parse(
-            'http://34.93.202.185:5000/api/v1/mobile_otp_login'), // Use your correct API endpoint
+            'https://api.briskev.com/api/v1/mobile_otp_login'), // Use your correct API endpoint
         headers: <String, String>{
           'Content-Type': 'application/json',
         },
@@ -107,7 +107,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://34.93.202.185:5000/login'),
+        Uri.parse('https://api.briskev.com/login'),
         headers: <String, String>{
           'Content-Type': 'application/json',
         },
@@ -224,7 +224,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://34.93.202.185:5000/api/v1/get_vehicle_dashboard?vehicle_id=$vehicleId&session=$sessionId'),
+            'https://api.briskev.com/api/v1/get_vehicle_dashboard?vehicle_id=$vehicleId&session=$sessionId'),
       );
       print('Response Body: ${response.body}'); // Debugging statement
       if (response.statusCode == 200) {

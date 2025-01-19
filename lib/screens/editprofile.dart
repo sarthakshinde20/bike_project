@@ -24,7 +24,7 @@ class _UploadPageState extends State<UploadPage> {
   File? _insuranceFile;
   File? _rcbookFile;
   final picker = ImagePicker();
-  final String apiUrl = 'http://34.93.202.185:5000';
+  final String apiUrl = 'https://api.briskev.com';
 
   Future<void> _pickImage(String documentType, String title) async {
     try {

@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState!.validate()) {
       final mobileNumber = _mobileNumberController.text;
       final response = await http.post(
-        Uri.parse('http://34.93.202.185:5000/api/v1/mobile_otp_login'),
+        Uri.parse('https://api.briskev.com/api/v1/mobile_otp_login'),
         headers: <String, String>{
           'Content-Type': 'application/json',
         },

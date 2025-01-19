@@ -18,7 +18,7 @@ class _GetUserDetailsPageState extends State<GetUserDetailsPage> {
   Future<void> fetchUserDetails() async {
     final response = await http.get(
       Uri.parse(
-          'http://34.93.202.185:5000/api/v1/get_user_details?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}'),
+          'https://api.briskev.com/api/v1/get_user_details?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}'),
     );
 
     if (response.statusCode == 200) {

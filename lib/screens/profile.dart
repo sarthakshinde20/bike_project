@@ -48,7 +48,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _fetchUserDetails() async {
     final url = Uri.parse(
-        'http://34.93.202.185:5000/api/v1/get_user_details?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}');
+        'https://api.briskev.com/api/v1/get_user_details?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}');
 
     try {
       final response = await http.get(url);
@@ -132,7 +132,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     try {
       var request = http.MultipartRequest('POST',
-          Uri.parse('http://34.93.202.185:5000/api/v1/add_user_documents'));
+          Uri.parse('https://api.briskev.com/api/v1/add_user_documents'));
       request.fields['data'] = jsonEncode({
         'vehicle_id': widget.vehicleId,
         'document_name': documentName,

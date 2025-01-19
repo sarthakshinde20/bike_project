@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:bike_project/response/notif.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -11,41 +13,52 @@ import 'package:bike_project/screens/otp.dart';
 import 'package:bike_project/screens/splashscreen.dart';
 import 'screens/login.dart';
 
-// Background message handler function
-Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
+// Correct: Top-level function
+@pragma('vm:entry-point')
+Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
   print('Handling a background message: ${message.messageId}');
-  await storeNotification(message); // Store the notification data
+  if (message.messageId != null) {
+    await storeNotification(message);
+  }
 }
 
 Future<void> storeNotification(RemoteMessage message) async {
-  List<Map<String, dynamic>> Listnotifications = [];
-  // print(
-  // 'storeNotification called with message: ${notification}'); // Debug: function call
+  List<Map<String, dynamic>> listNotifications = [];
 
-  final prefs = await SharedPreferences.getInstance();
-  String? notificationsData = prefs.getString('notifications');
-
-  if (notificationsData != null) {
-    List<dynamic> storedNotifications = jsonDecode(notificationsData);
-    Listnotifications.addAll(storedNotifications
-        .map((notification) => Map<String, dynamic>.from(notification))
-        .toList());
-  }
   // Combine notification data and payload
-  final NewNotification = {
+  final newNotification = {
     "title": message.notification?.title ?? "No Title",
     "body": message.notification?.body ?? "No Body",
     "time": DateTime.now().toIso8601String(),
   };
+  print(
+      'storeNotification called with message: $newNotification'); // Debug: function call
 
-  Listnotifications.add(NewNotification);
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    String? notificationsData = prefs.getString('notifications');
 
-  prefs.setString('notifications', jsonEncode(Listnotifications));
+    if (notificationsData != null && notificationsData.isNotEmpty) {
+      final storedNotifications =
+          jsonDecode(notificationsData) as List<dynamic>;
+      listNotifications = storedNotifications
+          .map((notification) => Map<String, dynamic>.from(notification))
+          .toList();
+    }
+
+    listNotifications.add(newNotification);
+
+    await prefs.setString('notifications', jsonEncode(listNotifications));
+
+    print('Updated notifications: $listNotifications');
+  } catch (e) {
+    // Handle exceptions gracefully
+    print('Error storing notification in Background: $e');
+  }
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
 
   await Firebase.initializeApp(
     options: const FirebaseOptions(
@@ -58,7 +71,8 @@ void main() async {
   );
 
   // Initialize Firebase and background message handler
-  await MyFirebaseMessagingService.setupFirebaseMessaging();
+  // await MyFirebaseMessagingService.setupFirebaseMessaging();
+  FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
 
   final prefs = await SharedPreferences.getInstance();
   final sessionId = prefs.getString('sessionId') ?? '';
@@ -95,13 +109,15 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  final notificationcontrolle notificationcontroller =
+      Get.put(notificationcontrolle(), permanent: true);
   final String sessionId;
   final String vehicleId;
   final String name;
   final Map<String, dynamic>? dashboardData;
   final Map<String, dynamic>? responseData;
 
-  const MyApp({
+  MyApp({
     Key? key,
     required this.sessionId,
     required this.vehicleId,
@@ -112,7 +128,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       initialRoute: 'splashscreen',
       routes: {
@@ -133,57 +149,57 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyFirebaseMessagingService {
-  static Future<void> setupFirebaseMessaging() async {
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
+// class MyFirebaseMessagingService {
+//   static Future<void> setupFirebaseMessaging() async {
+//     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+//         FlutterLocalNotificationsPlugin();
 
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+//     const AndroidInitializationSettings initializationSettingsAndroid =
+//         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    final InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
+//     final InitializationSettings initializationSettings =
+//         InitializationSettings(android: initializationSettingsAndroid);
 
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+//     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'my_channel_id', // Unique channel ID
-      'My Notifications', // Channel name
-      description: 'This channel is used for important notifications.',
-      importance: Importance.high,
-    );
+//     const AndroidNotificationChannel channel = AndroidNotificationChannel(
+//       'my_channel_id', // Unique channel ID
+//       'My Notifications', // Channel name
+//       description: 'This channel is used for important notifications.',
+//       importance: Importance.high,
+//     );
 
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
+//     await flutterLocalNotificationsPlugin
+//         .resolvePlatformSpecificImplementation<
+//             AndroidFlutterLocalNotificationsPlugin>()
+//         ?.createNotificationChannel(channel);
 
-    await FirebaseMessaging.instance.requestPermission();
+//     await FirebaseMessaging.instance.requestPermission();
 
-    // Handle foreground messages
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (message.notification != null) {
-        flutterLocalNotificationsPlugin.show(
-          message.hashCode,
-          message.notification!.title,
-          message.notification!.body,
-          NotificationDetails(
-            android: AndroidNotificationDetails(
-              channel.id,
-              channel.name,
-              channelDescription: channel.description,
-              importance: Importance.high,
-              priority: Priority.high,
-            ),
-          ),
-        );
-      }
-    });
+//     // Handle foreground messages
+//     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+//       if (message.notification != null) {
+//         flutterLocalNotificationsPlugin.show(
+//           message.hashCode,
+//           message.notification!.title,
+//           message.notification!.body,
+//           NotificationDetails(
+//             android: AndroidNotificationDetails(
+//               channel.id,
+//               channel.name,
+//               channelDescription: channel.description,
+//               importance: Importance.high,
+//               priority: Priority.high,
+//             ),
+//           ),
+//         );
+//       }
+//     });
 
-    // Handle background and closed state notifications
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('Notification clicked while app was in background or closed.');
-      storeNotification(message);
-    });
-  }
-}
+//     // Handle background and closed state notifications
+//     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+//       print('Notification clicked while app was in background or closed.');
+//       // storeNotification(message);
+//     });
+//   }
+// }

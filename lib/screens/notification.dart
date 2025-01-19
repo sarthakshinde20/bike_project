@@ -1,5 +1,7 @@
+import 'package:bike_project/response/notif.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -12,137 +14,6 @@ class NotificationPage extends StatefulWidget {
 }
 
 class _NotificationPageState extends State<NotificationPage> {
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  final List<Map<String, dynamic>> _notifications = [];
-  late StreamSubscription<RemoteMessage> _messageSubscription;
-
-  @override
-  void initState() {
-    super.initState();
-    _setupFirebaseMessaging();
-    _loadNotifications();
-  }
-
-  void _setupFirebaseMessaging() {
-    _firebaseMessaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-
-    _firebaseMessaging.getToken().then((String? token) {
-      print("Firebase Messaging Token: $token");
-    });
-
-    // Listen to foreground messages
-    _messageSubscription =
-        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (message.notification != null) {
-        String? title = message.notification!.title;
-        String? body = message.notification!.body;
-
-        if (title != null && body != null) {
-          final newNotification = {
-            "title": title,
-            "body": body,
-            "time": DateTime.now().toIso8601String(),
-          };
-
-          if (mounted) {
-            setState(() {
-              _notifications.add(newNotification);
-            });
-          }
-
-          _saveNotifications();
-        }
-      }
-    });
-
-    // Handle background messages
-    // FirebaseMessaging.onBackgroundMessage(_backgroundMessageHandler);
-  }
-
-  Future<void> _backgroundMessageHandler(RemoteMessage message) async {
-    WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
-
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    // Get stored notifications, handle decoding in case of an empty or corrupted JSON
-    List<dynamic> storedNotifications;
-    try {
-      final String? notificationsData = prefs.getString('notifications');
-      storedNotifications = notificationsData != null
-          ? jsonDecode(notificationsData) as List<dynamic>
-          : [];
-    } catch (e) {
-      print('Error decoding notifications: $e');
-      storedNotifications = [];
-    }
-
-    // Prepare the new notification with title, body, and current time
-    String? title = message.notification?.title;
-    String? body = message.notification?.body;
-
-    if (title != null && body != null) {
-      final newNotification = {
-        "title": title,
-        "body": body,
-        "time": DateTime.now().toIso8601String(),
-      };
-
-      // Add the new notification to the list and save it back to SharedPreferences
-      storedNotifications.add(newNotification);
-      await prefs.setString('notifications', jsonEncode(storedNotifications));
-    }
-  }
-
-  // Load notifications from SharedPreferences
-  void _loadNotifications() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? notificationsData = prefs.getString('notifications');
-
-    if (notificationsData != null) {
-      List<dynamic> storedNotifications = jsonDecode(notificationsData);
-      if (mounted) {
-        setState(() {
-          _notifications.addAll(storedNotifications
-              .map((notification) => Map<String, dynamic>.from(notification))
-              .toList());
-        });
-      }
-    }
-  }
-
-  // Save notifications to SharedPreferences
-  void _saveNotifications() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('notifications', jsonEncode(_notifications));
-  }
-
-  // Clear notifications
-  void _clearAllNotifications() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('notifications');
-
-    if (mounted) {
-      setState(() {
-        _notifications.clear();
-      });
-    }
-  }
-
-  // Filter recent notifications (within last 2 days)
-  List<Map<String, dynamic>> _getRecentNotifications() {
-    final now = DateTime.now();
-    return _notifications.where((notification) {
-      return now
-              .difference(DateTime.parse(notification['time'] as String))
-              .inDays <
-          2;
-    }).toList();
-  }
-
   String timeAgo(DateTime dateTime) {
     final difference = DateTime.now().difference(dateTime);
 
@@ -153,24 +24,18 @@ class _NotificationPageState extends State<NotificationPage> {
     } else if (difference.inMinutes > 0) {
       return '${difference.inMinutes} min${difference.inMinutes > 1 ? 's' : ''} ago';
     } else {
-      return 'just now';
+      return 'just now';
     }
   }
 
   @override
-  void dispose() {
-    _messageSubscription.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final recentNotifications = _getRecentNotifications();
-
-    return Scaffold(
-      body: Stack(
+    return Scaffold(body: Obx(() {
+      final screenWidth = MediaQuery.of(context).size.width;
+      final screenHeight = MediaQuery.of(context).size.height;
+      final recentNotifications =
+          notificationcontrolle.instance.getRecentNotifications();
+      return Stack(
         children: [
           // Background Image
           Align(
@@ -219,12 +84,14 @@ class _NotificationPageState extends State<NotificationPage> {
             child: Padding(
               padding: const EdgeInsets.only(right: 25.0, top: 220.0),
               child: GestureDetector(
-                onTap: _notifications.isEmpty ? null : _clearAllNotifications,
+                onTap: notificationcontrolle.instance.notifications.isEmpty
+                    ? null
+                    : notificationcontrolle.instance.clearAllNotifications,
                 child: Text(
                   'Clear All',
                   style: TextStyle(
                     fontSize: 16,
-                    color: _notifications.isEmpty
+                    color: notificationcontrolle.instance.notifications.isEmpty
                         ? const Color.fromRGBO(95, 95, 95, 1)
                         : const Color.fromRGBO(95, 95, 95, 1),
                     fontWeight: FontWeight.w500,
@@ -341,26 +208,26 @@ class _NotificationPageState extends State<NotificationPage> {
           ),
           // Home Button
           Align(
-            alignment: const AlignmentDirectional(0, 0.95),
+            alignment: const AlignmentDirectional(0, 0.9),
             child: GestureDetector(
               onTap: () {
                 Navigator.pop(context);
               },
-              child: ClipOval(
-                child: Container(
-                  color: Colors.blue,
-                  padding: const EdgeInsets.all(15),
-                  child: const Icon(
-                    Icons.home,
-                    color: Colors.white,
-                    size: 30,
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.14,
+                height: MediaQuery.of(context).size.width * 0.14,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: Image.asset(
+                    'assets/images/home.png',
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
             ),
           ),
         ],
-      ),
-    );
+      );
+    }));
   }
 }

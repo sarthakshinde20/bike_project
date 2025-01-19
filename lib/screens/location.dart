@@ -72,7 +72,7 @@ class MapScreenState extends State<MapScreen> {
 
   Future<void> _fetchStartingLocation() async {
     final response = await http.get(Uri.parse(
-      'http://34.93.202.185:5000/api/v1/get_vehicle_dashboard?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}',
+      'https://api.briskev.com/api/v1/get_vehicle_dashboard?vehicle_id=${widget.vehicleId}&session=${widget.sessionId}',
     ));
     print('Response Body: ${response.body}');
 
@@ -189,7 +189,7 @@ class MapScreenState extends State<MapScreen> {
 
   Future<void> _sendLocationToApi(LatLng location) async {
     final apiUrl =
-        'http://34.93.202.185:5000/api/v1/location/set_location'; // Update API URL
+        'https://api.briskev.com/api/v1/location/set_location'; // Update API URL
     final response = await http.post(
       Uri.parse(apiUrl),
       headers: <String, String>{
